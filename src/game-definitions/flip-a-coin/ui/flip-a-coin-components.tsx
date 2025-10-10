@@ -1,0 +1,86 @@
+import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+import { FlipACoinGameAction, FlipACoinGameState } from "../engine/flip-a-coin-engine";
+import { FlipACoinRepresentation } from "./flip-a-coin-representation";
+import { FlipACoinInput } from "./flip-a-coin-input";
+import { GameTable } from "@bfg-engine/models/game-table/game-table";
+import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
+
+
+
+export const createFlipACoinRepresentation = (
+  myPlayerSeat: GameTableSeat,
+  gameState: FlipACoinGameState,
+  mostRecentAction: FlipACoinGameAction
+) => {
+  return (
+    <FlipACoinRepresentation 
+      myPlayerSeat={myPlayerSeat} 
+      gameState={gameState} 
+      mostRecentAction={mostRecentAction}
+    />
+  );
+  
+}
+
+export const createFlipACoinInput = (
+  myPlayerSeat: GameTableSeat,
+  gameState: FlipACoinGameState,
+  mostRecentAction: FlipACoinGameAction,
+  onGameAction: (gameState: FlipACoinGameState, gameAction: FlipACoinGameAction) => void
+) => {
+  return (
+    <FlipACoinInput 
+      myPlayerSeat={myPlayerSeat} 
+      gameState={gameState} 
+      mostRecentAction={mostRecentAction}
+      onGameAction={onGameAction}
+    />
+  );
+}
+
+
+export const createFlipACoinCombinationRepresentationAndInput = (
+  myPlayerSeat: GameTableSeat,
+  gameState: FlipACoinGameState,
+  mostRecentAction: FlipACoinGameAction,
+  onGameAction: (gameState: FlipACoinGameState, gameAction: FlipACoinGameAction) => void
+) => {
+  return (
+    <>
+      <FlipACoinRepresentation 
+        myPlayerSeat={myPlayerSeat} 
+        gameState={gameState} 
+        mostRecentAction={mostRecentAction}
+      />
+      <FlipACoinInput 
+        myPlayerSeat={myPlayerSeat} 
+        gameState={gameState} 
+        mostRecentAction={mostRecentAction}
+        onGameAction={onGameAction}
+      />
+    </>
+  )
+}
+
+
+export const createFlipACoinHostRepresentation = (
+  gameTable: GameTable,
+  gameState: FlipACoinGameState,
+  mostRecentAction: FlipACoinGameAction,
+  _onGameAction: (gameState: FlipACoinGameState, gameAction: FlipACoinGameAction) => void
+) => {
+
+  const activePlayerSeats = getActivePlayerSeatsForGameTable(gameTable);
+
+  return (
+    <>
+      {activePlayerSeats.map(playerSeat => (
+        <FlipACoinRepresentation 
+          myPlayerSeat={playerSeat} 
+          gameState={gameState} 
+          mostRecentAction={mostRecentAction}
+        />
+      ))}
+    </>
+  )
+}
