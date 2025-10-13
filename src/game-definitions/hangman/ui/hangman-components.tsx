@@ -1,9 +1,9 @@
-import { GameTable, GameTableSeat } from "~/models/game-table/game-table";
-import { HangmanGameAction, HangmanGameState } from "~/types/bfg-game-engines/hangman-engine";
+import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { HangmanInput } from "./hangman-input";
 import { HangmanRepresentation } from "./representation/hangman-representation";
 import { isHangmanGuessingActive } from "./hangman-utils";
 import { useState } from "react";
+import { HangmanGameState, HangmanGameAction } from "../engine/hangman-engine";
 
 
 export const createHangmanRepresentation = (

@@ -1,6 +1,6 @@
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT, FlipACoinGameAction, FlipACoinGameState } from "../engine/flip-a-coin-engine";
-import { Button } from "bfg-ui-components";
+import { Button } from "@bfg-engine/ui/bfg-ui";
 
 
 interface FlipACoinInputProps {

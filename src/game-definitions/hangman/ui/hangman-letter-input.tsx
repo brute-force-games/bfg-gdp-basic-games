@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { LetterChoice } from "~/types/bfg-game-engines/hangman-engine";
+import { LetterChoice } from "../engine/hangman-engine";
 
 interface HangmanLetterInputProps {
   disabledLetters: LetterChoice[];

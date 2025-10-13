@@ -18,8 +18,11 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
+      "~/*": ["./src/*"],
       "@bfg-engine": ["../bfg-engine/src"],
-      "@bfg-engine/*": ["../bfg-engine/src/*"]
+      "@bfg-engine/*": ["../bfg-engine/src/*"],
+      "@bfg-ui-components": ["../bfg-ui-components/src"],
+      "@bfg-ui-components/*": ["../bfg-ui-components/src/*"]
     }
   },
   "include": ["src/**/*"],

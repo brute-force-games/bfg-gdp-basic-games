@@ -1,5 +1,5 @@
 import { TicTacToeMove, TicTacToeGameState, TicTacToeMoveCell, getPlayerSeatSymbol, getCurrentPlayer } from "../engine/tic-tac-toe-engine";
-import { Button, Typography, Box } from "bfg-ui-components";
+import { Button, Typography, Box } from "@bfg-engine/ui/bfg-ui";
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 
 
