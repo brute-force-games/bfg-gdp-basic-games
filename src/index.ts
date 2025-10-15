@@ -8,14 +8,17 @@ import { HangmanGameStateProcessor } from "./game-definitions/hangman/engine/han
 
 // Create metadata objects with game definitions
 const TicTacToeGameMetadata = {
+  definition: TicTacToeGameDefinition,
   processor: TicTacToeGameStateProcessor
 };
 
 const FlipACoinGameMetadata = {
+  definition: FlipACoinGameDefinition,
   processor: FlipACoinGameStateProcessor
 };
 
 const HangmanGameMetadata = {
+  definition: HangmanGameDefinition,
   processor: HangmanGameStateProcessor
 };
 
