@@ -1,10 +1,10 @@
-import { GameTableSeat } from "~/models/game-table/game-table";
-import { FlipACoinGameAction, FlipACoinGameState } from "~/types/bfg-game-engines/flip-a-coin-engine";
+import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+import { FlipACoinGameAction, FlipACoinGameState } from "../engine/flip-a-coin-engine";
 
 
 
 interface FlipACoinRepresentationProps {
-  myPlayerSeat: GameTableSeat;
+  myPlayerSeat: GameTableSeat | null;
   gameState: FlipACoinGameState;
   mostRecentAction: FlipACoinGameAction;
 }
@@ -20,32 +20,52 @@ export const FlipACoinRepresentation = (props: FlipACoinRepresentationProps) => 
     );
   }
 
+  const preferredOutcome = myPlayerSeat === null ?
+    "Just watching" :
+    gameState.playerFlipResultPreferences?.[myPlayerSeat];
+
+  const getOutcomeResult = () => {
+    if (gameState.flipResult === undefined) {
+      return 'oo';
+    }
+
+    if (myPlayerSeat === null) {
+      return ':|';
+    }
+
+    switch (gameState.playerFlipResultPreferences?.[myPlayerSeat]) {
+      case 'heads':
+        return gameState.flipResult === 'heads' ? ':D' : ':(';
+      case 'tails':
+        return gameState.flipResult === 'tails' ? ':D' : ':(';
+      case undefined:
+      case 'no-preference':
+      default:
+        return ':|';
+    }
+  }
+
+  const coinType = gameState.chosenCoin;
+  const outcomeResult = getOutcomeResult();
+
   if (gameState.isFlipped) {
     return (
       <>
         <div>
-          A {gameState.chosenCoin} was flipped and got {gameState.flipResult}
+          A {coinType} was flipped and got {gameState.flipResult}
         </div>
-        <div>My preferred outcome: {gameState.playerFlipResultPreferences?.[myPlayerSeat]}</div>
+        <div>My preferred outcome: {preferredOutcome}</div>
         <div>
-          {gameState.playerFlipResultPreferences?.[myPlayerSeat] === gameState.flipResult ? (
-            <div>:D</div>
-          ) : (
-            <div>:(</div>
-          )}
+          {outcomeResult}
         </div>
       </>
     );
   }
 
-  
-
-  const coinType = gameState.chosenCoin;
-
   return (
     <>
       <div>Flipping a {coinType}</div>
-      <div>My preferred outcome: {gameState.playerFlipResultPreferences?.[myPlayerSeat]}</div>
+      <div>My preferred outcome: {preferredOutcome}</div>
     </>
   );
 }

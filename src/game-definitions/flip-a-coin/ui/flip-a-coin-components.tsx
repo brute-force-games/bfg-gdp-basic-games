@@ -8,7 +8,7 @@ import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops
 
 
 export const createFlipACoinRepresentation = (
-  myPlayerSeat: GameTableSeat,
+  myPlayerSeat: GameTableSeat | null,
   gameState: FlipACoinGameState,
   mostRecentAction: FlipACoinGameAction
 ) => {
