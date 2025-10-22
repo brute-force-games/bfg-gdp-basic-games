@@ -1,12 +1,16 @@
-import { GameTableSeat } from "~/models/game-table/game-table";
-import { HangmanGameState } from "~/types/bfg-game-engines/hangman-engine";
+import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+import { HangmanGameState } from "../engine/hangman-engine";
 
 
 export const isHangmanGuessingActive = (gameState: HangmanGameState) => {
   return gameState.hiddenWordSource === null && gameState.hiddenWordInfo !== null;
 }
 
-export const getHiddenWordStatusLabel = (gameState: HangmanGameState, myPlayerSeat: GameTableSeat) => {
+export const getHiddenWordStatusLabel = (gameState: HangmanGameState, myPlayerSeat: GameTableSeat | null) => {
+  if (!myPlayerSeat) {
+    return "You are not a player in this game.";
+  }
+
   const myPlayerHiddenWordSubmission = gameState.playerHiddenWordSubmissions
     .find(submission => submission.seat === myPlayerSeat);
   

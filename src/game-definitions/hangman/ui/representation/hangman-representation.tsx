@@ -1,11 +1,11 @@
-import { GameTableSeat } from "~/models/game-table/game-table";
-import { HangmanGameAction, HangmanGameState } from "~/types/bfg-game-engines/hangman-engine";
+import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+import { HangmanGameAction, HangmanGameState } from "../../engine/hangman-engine";
 import { HangmanStickFigure } from "./hangman-stick-figure";
 import { getHiddenWordStatusLabel, isHangmanGuessingActive } from "../hangman-utils";
 
 
 interface HangmanRepresentationProps {
-  myPlayerSeat: GameTableSeat;
+  myPlayerSeat: GameTableSeat | null;
   gameState: HangmanGameState;
   mostRecentAction: HangmanGameAction;
 }

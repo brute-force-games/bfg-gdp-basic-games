@@ -7,7 +7,7 @@ import { HangmanGameState, HangmanGameAction } from "../engine/hangman-engine";
 
 
 export const createHangmanRepresentation = (
-  myPlayerSeat: GameTableSeat,
+  myPlayerSeat: GameTableSeat | null,
   gameState: HangmanGameState,
   mostRecentAction: HangmanGameAction
 ) => {
