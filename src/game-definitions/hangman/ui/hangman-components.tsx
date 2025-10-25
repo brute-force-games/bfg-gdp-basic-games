@@ -1,17 +1,18 @@
-import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { HangmanInput } from "./hangman-input";
 import { HangmanRepresentation } from "./representation/hangman-representation";
 import { isHangmanGuessingActive } from "./hangman-utils";
 import { useState } from "react";
-import { HangmanGameState, HangmanGameAction } from "../engine/hangman-engine";
+import { HangmanGameAction, HangmanGameStateSchema, HangmanGameActionSchema } from "../engine/hangman-engine";
+import { GameStateActionInputProps, GameStateCombinationRepresentationAndInputProps, GameStateHostComponentProps, GameStateRepresentationProps } from "@bfg-engine/models/game-engine/bfg-game-engines";
 
 
 export const createHangmanRepresentation = (
-  myPlayerSeat: GameTableSeat | null,
-  gameState: HangmanGameState,
-  mostRecentAction: HangmanGameAction
+  props: GameStateRepresentationProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
+  // myPlayerSeat: GameTableSeat | null,
+  // gameState: HangmanGameState,
+  // mostRecentAction: HangmanGameAction
 ) => {
-
+  const { myPlayerSeat, gameState, mostRecentAction } = props;
   return (
     <HangmanRepresentation 
       myPlayerSeat={myPlayerSeat} 
@@ -23,11 +24,13 @@ export const createHangmanRepresentation = (
 
 
 export const createHangmanInput = (
-  myPlayerSeat: GameTableSeat,
-  gameState: HangmanGameState,
-  mostRecentAction: HangmanGameAction,
-  onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
+  props: GameStateActionInputProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
+  // myPlayerSeat: GameTableSeat,
+  // gameState: HangmanGameState,
+  // mostRecentAction: HangmanGameAction,
+  // onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
 ) => {
+  const { myPlayerSeat, gameState, mostRecentAction, onGameAction } = props;
   return (
     <HangmanInput 
       myPlayerSeat={myPlayerSeat} 
@@ -40,24 +43,26 @@ export const createHangmanInput = (
 
 
 export const createHangmanComboRepresentationAndInput = (
-  myPlayerSeat: GameTableSeat,
-  gameState: HangmanGameState,
-  _mostRecentAction: HangmanGameAction,
-  _onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
+  props: GameStateCombinationRepresentationAndInputProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
+  // myPlayerSeat: GameTableSeat,
+  // gameState: HangmanGameState,
+  // _mostRecentAction: HangmanGameAction,
+  // _onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
 ) => {
-  
+  const { myPlayerSeat, gameState, mostRecentAction, onGameAction } = props;
+
   return (
     <>
       <HangmanRepresentation
         myPlayerSeat={myPlayerSeat}
         gameState={gameState}
-        mostRecentAction={_mostRecentAction}
+        mostRecentAction={mostRecentAction}
       />
       <HangmanInput
         myPlayerSeat={myPlayerSeat}
         gameState={gameState}
-        mostRecentAction={_mostRecentAction}
-        onGameAction={_onGameAction}
+        mostRecentAction={mostRecentAction}
+        onGameAction={onGameAction}
       />  
     </>
   )
@@ -65,12 +70,13 @@ export const createHangmanComboRepresentationAndInput = (
 
 
 export const createHangmanHostComponent = (
-  _gameTable: GameTable,
-  gameState: HangmanGameState,
-  _mostRecentAction: HangmanGameAction,
-  onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
+  props: GameStateHostComponentProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
+  // _gameTable: GameTable,
+  // gameState: HangmanGameState,
+  // _mostRecentAction: HangmanGameAction,
+  // onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
 ) => {
-
+  const { gameTable, gameState, onGameAction } = props;
   const gameActive = isHangmanGuessingActive(gameState);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
@@ -100,7 +106,7 @@ export const createHangmanHostComponent = (
       };
     }
 
-    onGameAction(gameState, finalizationAction);
+    onGameAction(gameTable, gameState, finalizationAction);
   };
 
 
