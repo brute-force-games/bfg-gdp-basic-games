@@ -1,29 +1,41 @@
 import { registerGame } from "@bfg-engine";
-import { TicTacToeGameName, TicTacToeGameDefinition } from "./game-definitions/tic-tac-toe/game-box";
-import { TicTacToeGameStateProcessor } from "./game-definitions/tic-tac-toe/engine/tic-tac-toe-engine";
-import { FlipACoinGameName, FlipACoinGameDefinition } from "./game-definitions/flip-a-coin/game-box";
-import { FlipACoinGameStateProcessor } from "./game-definitions/flip-a-coin/engine/flip-a-coin-engine";
-import { HangmanGameName, HangmanGameDefinition } from "./game-definitions/hangman/game-box";
-import { HangmanGameStateProcessor } from "./game-definitions/hangman/engine/hangman-engine";
+import { FlipACoinGameMetadata } from "./game-definitions/flip-a-coin/game-box";
+import { TicTacToeGameMetadata } from "./game-definitions/tic-tac-toe/game-box";
+import { HangmanGameMetadata } from "./game-definitions/hangman/game-box";
 
-// Create metadata objects with game definitions
-const TicTacToeGameMetadata = {
-  definition: TicTacToeGameDefinition,
-  processor: TicTacToeGameStateProcessor
-};
+// // Create metadata objects with game definitions
+// const TicTacToeGameMetadata = {
+//   definition: TicTacToeGameDefinition,
+//   processor: TicTacToeGameStateProcessor
+// };
 
-const FlipACoinGameMetadata = {
-  definition: FlipACoinGameDefinition,
-  processor: FlipACoinGameStateProcessor
-};
+// const FlipACoinGameMetadata = {
+//   definition: FlipACoinGameDefinition,
+//   processor: FlipACoinGameStateProcessor
+// };
 
-const HangmanGameMetadata = {
-  definition: HangmanGameDefinition,
-  processor: HangmanGameStateProcessor
-};
+// const HangmanGameMetadata = {
+//   definition: HangmanGameDefinition,
+//   processor: HangmanGameStateProcessor
+// };
+
+
+
+// const BingoGameMetadata: BfgGameEngineMetadata<BingoGameState, BingoPlayerAction, BingoHostAction> = {
+//   gameTitle: BingoGameName,
+//   definition: BingoGameDefinition,
+
+//   gameSpecificStateEncoder: createJsonZodObjectDataEncoder(BingoGameStateSchema),
+//   playerActionEncoder: createJsonZodObjectDataEncoder(BingoPlayerActionSchema),
+//   hostActionEncoder: createJsonZodObjectDataEncoder(BingoHostActionSchema),
+
+//   engine: BingoGameProcessor,
+//   components: BingoGameComponents,
+// };
+
 
 export const initBasicGames = () => {
-  registerGame(TicTacToeGameName, TicTacToeGameDefinition, TicTacToeGameMetadata);
-  registerGame(FlipACoinGameName, FlipACoinGameDefinition, FlipACoinGameMetadata);
-  registerGame(HangmanGameName, HangmanGameDefinition, HangmanGameMetadata);
+  registerGame(TicTacToeGameMetadata);
+  registerGame(FlipACoinGameMetadata);
+  registerGame(HangmanGameMetadata);
 }

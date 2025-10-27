@@ -1,82 +1,11 @@
-import { HangmanInput } from "./hangman-input";
-import { HangmanRepresentation } from "./representation/hangman-representation";
-import { isHangmanGuessingActive } from "./hangman-utils";
+import { HangmanGameState, HangmanHostAction, HANGMAN_HOST_ACTION_STARTS_GAME } from '../../engine/hangman-engine';
+import { GameHostComponentProps } from '@bfg-engine/models/game-engine/bfg-game-engine-types';
+import { HangmanRepresentation } from '../representation/hangman-representation';
+import { isHangmanGuessingActive } from '../hangman-utils';
 import { useState } from "react";
-import { HangmanGameAction, HangmanGameStateSchema, HangmanGameActionSchema, HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD } from "../engine/hangman-engine";
-import { GameStateActionInputProps, GameStateCombinationRepresentationAndInputProps, GameStateHostComponentProps, GameStateRepresentationProps } from "@bfg-engine/models/game-engine/bfg-game-engines";
 
-
-export const createHangmanRepresentation = (
-  props: GameStateRepresentationProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
-  // myPlayerSeat: GameTableSeat | null,
-  // gameState: HangmanGameState,
-  // mostRecentAction: HangmanGameAction
-) => {
-  const { myPlayerSeat, gameState, mostRecentAction } = props;
-  return (
-    <HangmanRepresentation 
-      myPlayerSeat={myPlayerSeat} 
-      gameState={gameState} 
-      mostRecentAction={mostRecentAction}
-    />
-  );
-}
-
-
-export const createHangmanInput = (
-  props: GameStateActionInputProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
-  // myPlayerSeat: GameTableSeat,
-  // gameState: HangmanGameState,
-  // mostRecentAction: HangmanGameAction,
-  // onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
-) => {
-  const { myPlayerSeat, gameState, mostRecentAction, onGameAction } = props;
-  return (
-    <HangmanInput 
-      myPlayerSeat={myPlayerSeat} 
-      gameState={gameState} 
-      mostRecentAction={mostRecentAction}
-      onGameAction={onGameAction}
-    />
-  );
-}
-
-
-export const createHangmanComboRepresentationAndInput = (
-  props: GameStateCombinationRepresentationAndInputProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
-  // myPlayerSeat: GameTableSeat,
-  // gameState: HangmanGameState,
-  // _mostRecentAction: HangmanGameAction,
-  // _onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
-) => {
-  const { myPlayerSeat, gameState, mostRecentAction, onGameAction } = props;
-
-  return (
-    <>
-      <HangmanRepresentation
-        myPlayerSeat={myPlayerSeat}
-        gameState={gameState}
-        mostRecentAction={mostRecentAction}
-      />
-      <HangmanInput
-        myPlayerSeat={myPlayerSeat}
-        gameState={gameState}
-        mostRecentAction={mostRecentAction}
-        onGameAction={onGameAction}
-      />  
-    </>
-  )
-}
-
-
-export const createHangmanHostComponent = (
-  props: GameStateHostComponentProps<typeof HangmanGameStateSchema, typeof HangmanGameActionSchema>,
-  // _gameTable: GameTable,
-  // gameState: HangmanGameState,
-  // _mostRecentAction: HangmanGameAction,
-  // onGameAction: (gameState: HangmanGameState, gameAction: HangmanGameAction) => void
-) => {
-  const { gameTable, gameState, onGameAction } = props;
+export const HangmanHostComponent = (props: GameHostComponentProps<HangmanGameState, HangmanHostAction>) => {
+  const { gameState, onHostAction } = props;
   const gameActive = isHangmanGuessingActive(gameState);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
@@ -90,25 +19,26 @@ export const createHangmanHostComponent = (
       return;
     }
 
-    // Create the finalization action based on selection
-    let finalizationAction: HangmanGameAction;
+    // Create the initial game action with word source
+    let initialGameAction: HangmanHostAction;
 
     if (selectedOption === 'internal-word-list') {
-      finalizationAction = {
-        actionType: HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD,
-        source: { source: 'internal-word-list' }
+      initialGameAction = {
+        source: 'host',
+        hostActionType: HANGMAN_HOST_ACTION_STARTS_GAME,
+        wordSource: { source: 'internal-word-list' }
       };
     } else {
       // selectedOption should be a player seat
-      finalizationAction = {
-        actionType: HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD,
-        source: { source: 'player', seat: selectedOption as any }
+      initialGameAction = {
+        source: 'host',
+        hostActionType: HANGMAN_HOST_ACTION_STARTS_GAME,
+        wordSource: { source: 'player', seat: selectedOption as any }
       };
     }
 
-    onGameAction(gameTable, gameState, finalizationAction);
+    onHostAction(initialGameAction);
   };
-
 
   return (
     <div style={{ padding: "20px", textAlign: "center" }}>
@@ -125,8 +55,8 @@ export const createHangmanHostComponent = (
         )}
       </div>
 
-      {/* Host Controls Section - Only show when game is NOT active */}
-      {!gameActive && (
+      {/* Host Controls Section - Only show when game is NOT active and NOT over */}
+      {!gameActive && !gameState.isGameOver && (
         <div style={{ 
           border: "2px solid #dee2e6", 
           borderRadius: "10px", 
@@ -216,6 +146,13 @@ export const createHangmanHostComponent = (
           </div>
         </div>
       )}
+
+      {/* Game Representation */}
+      <HangmanRepresentation 
+        myPlayerSeat={'p1'}
+        gameState={gameState}
+        mostRecentAction={undefined as any}
+      />
     </div>
   );
-}
+};

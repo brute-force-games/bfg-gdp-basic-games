@@ -1,13 +1,13 @@
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
-import { FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT, FlipACoinGameAction, FlipACoinGameState } from "../engine/flip-a-coin-engine";
+import { FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT, FlipACoinPlayerAction, FlipACoinGameState, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
 import { Button } from "@bfg-engine/ui/bfg-ui";
 
 
 interface FlipACoinInputProps {
   myPlayerSeat: GameTableSeat;
   gameState: FlipACoinGameState;
-  mostRecentAction: FlipACoinGameAction;
-  onGameAction: (gameState: FlipACoinGameState, gameAction: FlipACoinGameAction) => void;
+  mostRecentAction: FlipACoinPlayerAction | FlipACoinHostAction | null;
+  onGameAction: (gameAction: FlipACoinPlayerAction) => void;
 }
 
 export const FlipACoinInput = (props: FlipACoinInputProps) => {
@@ -19,16 +19,18 @@ export const FlipACoinInput = (props: FlipACoinInputProps) => {
 
 
   const chooseCoin = (coinType: "penny" | "nickel" | "dime" | "quarter") => {
-    onGameAction(gameState, { 
-      actionType: "game-table-action-player-choose-coin", 
+    onGameAction({ 
+      playerActionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN, 
+      source: "player",
       seat: myPlayerSeat,
       chosenCoin: coinType,
     });
   }
 
   const preferOutcome = (outcome: "heads" | "tails" | "no-preference") => {
-    onGameAction(gameState, { 
-      actionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT,
+    onGameAction({ 
+      playerActionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT,
+      source: "player",
       seat: myPlayerSeat,
       preferredFlipResult: outcome,
     });
@@ -37,8 +39,9 @@ export const FlipACoinInput = (props: FlipACoinInputProps) => {
   const doFlipCoin = () => {
     const outcome = Math.random() < 0.5 ? "heads" : "tails";
     
-    onGameAction(gameState, { 
-      actionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN,
+    onGameAction({ 
+      playerActionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN,
+      source: "player",
       seat: myPlayerSeat,
       flipResult: outcome,
     });
@@ -46,24 +49,27 @@ export const FlipACoinInput = (props: FlipACoinInputProps) => {
 
   const doFinishGame = () => {
     if (flipOutcome === undefined) {
-      onGameAction(gameState, {
-        actionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME,
+      onGameAction({
+        playerActionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME,
+        source: "player",
         seat: myPlayerSeat,
         cancellationReason: "Error - coin has not been flipped before someone can call it",
       });
       return;
     }
 
-    onGameAction(gameState, { 
-      actionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME,
+    onGameAction({ 
+      playerActionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME,
+      source: "player",
       seat: myPlayerSeat,
       calledFlipResult: flipOutcome,
     });
   }
 
   const doCancelGame = () => {
-    onGameAction(gameState, {
-      actionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME,
+    onGameAction({
+      playerActionType: FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME,
+      source: "player",
       seat: myPlayerSeat,
       cancellationReason: `Flip cancelled by ${myPlayerSeat}`,
     });

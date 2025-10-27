@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { HangmanRepresentation } from './hangman-representation';
-import { HangmanGameState, HangmanGameAction } from '~/types/bfg-game-engines/hangman-engine';
+import { HangmanGameState, HangmanGameAction, HANGMAN_GAME_TABLE_ACTION_PLAYER_GUESS_LETTER } from '~/types/bfg-game-engines/hangman-engine';
 import { GameTableSeat } from '~/models/game-table/game-table';
 
 // Helper function to create mock game state
@@ -29,7 +29,7 @@ const createMockGameState = (overrides: Partial<HangmanGameState> = {}): Hangman
 });
 
 const createMockAction = (): HangmanGameAction => ({
-  actionType: 'game-table-action-player-guess-letter',
+  actionType: HANGMAN_GAME_TABLE_ACTION_PLAYER_GUESS_LETTER,
   seat: 'p1',
   guess: 'A',
 });

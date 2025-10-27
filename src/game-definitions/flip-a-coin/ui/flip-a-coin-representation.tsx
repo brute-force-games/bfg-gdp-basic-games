@@ -1,12 +1,12 @@
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
-import { FlipACoinGameAction, FlipACoinGameState } from "../engine/flip-a-coin-engine";
+import { FlipACoinPlayerAction, FlipACoinGameState, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
 
 
 
 interface FlipACoinRepresentationProps {
   myPlayerSeat: GameTableSeat | null;
   gameState: FlipACoinGameState;
-  mostRecentAction: FlipACoinGameAction;
+  mostRecentAction: FlipACoinPlayerAction | FlipACoinHostAction | null;
 }
 
 export const FlipACoinRepresentation = (props: FlipACoinRepresentationProps) => {

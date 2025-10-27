@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
-import { HangmanGameAction, HangmanGameState, HANGMAN_GAME_TABLE_ACTION_PLAYER_PICKS_HIDDEN_WORD, HANGMAN_GAME_TABLE_ACTION_PLAYER_GUESS_LETTER, LetterChoice } from "../engine/hangman-engine";
+import { 
+  HangmanGameAction, 
+  HangmanGameState, 
+  HANGMAN_GAME_TABLE_ACTION_PLAYER_PICKS_HIDDEN_WORD, 
+  HANGMAN_GAME_TABLE_ACTION_PLAYER_GUESS_LETTER, 
+  LetterChoice 
+} from "../engine/hangman-engine";
 import { getHiddenWordStatusLabel, isHangmanGuessingActive } from "./hangman-utils";
 import { HangmanLetterInput } from "./hangman-letter-input";
 
@@ -74,6 +80,28 @@ export const HangmanInput = ({
   };
 
   const isGameActive = isHangmanGuessingActive(gameState);
+
+  // If game is over, show game over message
+  if (gameState.isGameOver) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <div style={{ 
+          padding: "15px", 
+          backgroundColor: gameState.outcomeSummary?.includes('won') ? '#d4edda' : '#f8d7da',
+          border: `1px solid ${gameState.outcomeSummary?.includes('won') ? '#c3e6cb' : '#f5c6cb'}`,
+          borderRadius: "8px",
+          fontSize: "18px",
+          fontWeight: "bold",
+          color: gameState.outcomeSummary?.includes('won') ? '#155724' : '#721c24'
+        }}>
+          {gameState.outcomeSummary || "Game Over"}
+        </div>
+        <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
+          The word was: <strong>{gameState.hiddenWordInfo?.hiddenWord}</strong>
+        </div>
+      </div>
+    );
+  }
 
   if (isGameActive) {
     const disabledLetters = gameState.lettersGuessed;

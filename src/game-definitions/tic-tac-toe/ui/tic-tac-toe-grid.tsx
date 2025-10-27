@@ -33,7 +33,8 @@ export const TicTacToeGrid = (props: TicTacToeGridProps) => {
     const moveCell = `${colLetter}${row}` as TicTacToeMoveCell;
     
     onGameAction(gameState, {
-      actionType: 'game-table-action-player-move',
+      playerActionType: 'game-table-action-player-move',
+      source: 'player',
       moveCell,
       movePlayer: currentPlayer,
     });

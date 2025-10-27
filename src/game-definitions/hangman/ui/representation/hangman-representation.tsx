@@ -30,7 +30,8 @@ export const HangmanRepresentation = ({
 
   console.log("createHangmanRepresentation", gameActive);
 
-  if (!gameActive) {
+  // If game is not active and not over, show status label
+  if (!gameActive && !gameState.isGameOver) {
     const hiddenWordStatusLabel = getHiddenWordStatusLabel(gameState, myPlayerSeat);
 
     return (

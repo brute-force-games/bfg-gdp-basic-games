@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { getWordInfoFromInternalWordList } from "./hangman-engine-utils";
-import { HangmanGameName } from "../game-box";
-import { BfgGameSpecificTableAction, createBfgGameEngineProcessor, GameTableSeatSchema, IBfgGameEngineProcessor } from "@bfg-engine";
+import { BfgSupportedGameTitle, GameTableSeatSchema } from "@bfg-engine";
 import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-ids";
 import { GameTable } from "@bfg-engine/models/game-table/game-table";
 import { GameTableActionResult } from "@bfg-engine/models/game-table/table-phase";
-import { createHangmanHostComponent, createHangmanRepresentation, createHangmanInput, createHangmanComboRepresentationAndInput } from "../ui/hangman-components";
-import { BfgGameEngineRendererFactory } from "@bfg-engine/models/game-engine/bfg-game-engines";
+import { BfgGameSpecificGameStateSchema, BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
+import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+
+export const HangmanGameName = 'Hangman' as BfgSupportedGameTitle;
 
 
 
@@ -33,33 +35,19 @@ export type LetterChoice = z.infer<typeof LetterChoiceSchema>;
 // export const HANGMAN_WORD_SOURCE_HOST_CHOSES_RANDOM = 'hangman-word-source-host-chooses-random' as const;
 
 
-export const HANGMAN_GAME_TABLE_ACTION_START_GAME = 'game-table-action-host-start-game' as const;
 export const HANGMAN_WORD_SOURCE_NOT_SET = 'hangman-word-source-not-set' as const;
+
+// Legacy action constants for backward compatibility with UI components
 export const HANGMAN_GAME_TABLE_ACTION_PLAYER_PICKS_HIDDEN_WORD = 'game-table-action-player-picks-hidden-word' as const;
-export const HANGMAN_GAME_TABLE_ACTION_HOST_CHOOSES_RANDOM_HIDDEN_WORD = 'game-table-action-host-chooses-random-hidden-word' as const;
-export const HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD = 'hangman-game-table-action-host-finalizes-hidden-word' as const;
 export const HANGMAN_GAME_TABLE_ACTION_PLAYER_GUESS_LETTER = 'game-table-action-player-guess-letter' as const;
 export const HANGMAN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME = 'game-table-action-player-cancel-game' as const;
+export const HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD = 'game-table-action-host-action' as const;
 
-
-export const HangmanActionStartGameSchema = z.object({
-  actionType: z.literal(HANGMAN_GAME_TABLE_ACTION_START_GAME),
-})
-
-export type HangmanActionStartGame = z.infer<typeof HangmanActionStartGameSchema>;
-
-
-// export const HangmanWordSourceNotSetSchema = z.object({
-//   actionType: z.literal(HANGMAN_WORD_SOURCE_NOT_SET),
-// })
-
-export const HangmanWordSourceNotSetSchema = z.literal(HANGMAN_WORD_SOURCE_NOT_SET)
-
-// export const HangmanHiddenWordSourceSchema = z.enum([
-//   'use-horse',
-//   'internal-word-list',
-// ])
-// export type HangmanHiddenWordSource = z.infer<typeof HangmanHiddenWordSourceSchema>;
+// Modern action constants
+export const HANGMAN_HOST_ACTION_STARTS_GAME = 'game-table-action-host-starts-game' as const;
+export const HANGMAN_PLAYER_ACTION_PICKS_HIDDEN_WORD = 'game-table-action-player-picks-hidden-word' as const;
+export const HANGMAN_PLAYER_ACTION_GUESS_LETTER = 'game-table-action-player-guess-letter' as const;
+export const HANGMAN_PLAYER_ACTION_CANCEL_GAME = 'game-table-action-player-cancel-game' as const;
 
 
 export const HiddenWordInfoSchema = z.object({
@@ -78,40 +66,9 @@ export const PlayerHiddenWordSubmissionSchema = z.object({
 export type PlayerHiddenWordSubmission = z.infer<typeof PlayerHiddenWordSubmissionSchema>;
 
 
-export const HangmanActionPlayerPicksHiddenWordSchema = z.object({
-  actionType: z.literal(HANGMAN_GAME_TABLE_ACTION_PLAYER_PICKS_HIDDEN_WORD),
-  seat: GameTableSeatSchema,
-  hiddenWordInfo: HiddenWordInfoSchema,
-})
-
-export type HangmanActionPlayerPicksHiddenWord = z.infer<typeof HangmanActionPlayerPicksHiddenWordSchema>;
-
-
-// export const HangmanActionHostChoosesHiddenWordSourceRandomSchema = z.object({
-//   actionType: z.literal(HANGMAN_GAME_TABLE_ACTION_HOST_CHOOSES_RANDOM_HIDDEN_WORD),
-//   hiddenWordSource: HangmanHiddenWordSourceSchema,
-// })
-
-// export type HangmanActionHostChoosesHiddenWordSourceRandom = z.infer<typeof HangmanActionHostChoosesHiddenWordSourceRandomSchema>;
-
-// export const HangmanActionSetupHiddenWordActionSchema = z.discriminatedUnion('actionType', [
-//   HangmanActionPlayerPicksHiddenWordSchema,
-//   HangmanActionHostChoosesHiddenWordSourceRandomSchema,
-// ])
-
-
-// export const HangmanActionFinalizeHiddenWordSchema = z.discriminatedUnion('actionType', [
-//   HangmanActionPlayerPicksHiddenWordSchema,
-//   HangmanActionHostChoosesHiddenWordSourceRandomSchema,
-// ])
-
-// export type HangmanActionFinalizeHiddenWord = z.infer<typeof HangmanActionFinalizeHiddenWordSchema>;
-
-
-export const HangmanActionHostFinalizesHiddenWordActionSchema = z.object({
-  actionType: z.literal(HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD),
-  // finalizedHiddenWordInfo: HiddenWordInfoSchema,
-  source: z.discriminatedUnion('source', [
+export const HangmanSetupGameSchema = BfgGameImplHostActionSchema.extend({
+  hostActionType: z.literal(HANGMAN_HOST_ACTION_STARTS_GAME),
+  wordSource: z.discriminatedUnion('source', [
     z.object({
       source: z.literal('player'),
       seat: GameTableSeatSchema,
@@ -122,7 +79,60 @@ export const HangmanActionHostFinalizesHiddenWordActionSchema = z.object({
   ]),
 })
 
-export type HangmanActionHostFinalizesHiddenWordAction = z.infer<typeof HangmanActionHostFinalizesHiddenWordActionSchema>;
+export type HangmanSetupGame = z.infer<typeof HangmanSetupGameSchema>;
+
+
+export const HangmanPlayerPicksHiddenWordSchema = BfgGameImplPlayerActionSchema.extend({
+  playerActionType: z.literal(HANGMAN_PLAYER_ACTION_PICKS_HIDDEN_WORD),
+  hiddenWordInfo: HiddenWordInfoSchema,
+  playerSeat: GameTableSeatSchema,
+})
+
+export type HangmanPlayerPicksHiddenWord = z.infer<typeof HangmanPlayerPicksHiddenWordSchema>;
+
+
+export const HangmanPlayerGuessLetterSchema = BfgGameImplPlayerActionSchema.extend({
+  playerActionType: z.literal(HANGMAN_PLAYER_ACTION_GUESS_LETTER),
+  guess: LetterChoiceSchema,
+  playerSeat: GameTableSeatSchema,
+})
+
+export type HangmanPlayerGuessLetter = z.infer<typeof HangmanPlayerGuessLetterSchema>;
+
+
+export const HangmanPlayerCancelGameSchema = BfgGameImplPlayerActionSchema.extend({
+  playerActionType: z.literal(HANGMAN_PLAYER_ACTION_CANCEL_GAME),
+  cancellationReason: z.string(),
+  playerSeat: GameTableSeatSchema,
+})
+
+export type HangmanPlayerCancelGame = z.infer<typeof HangmanPlayerCancelGameSchema>;
+
+
+export const HangmanHostActionSchema = z.discriminatedUnion('hostActionType', [
+  HangmanSetupGameSchema,
+])
+
+export type HangmanHostAction = z.infer<typeof HangmanHostActionSchema>;
+
+
+export const HangmanPlayerActionSchema = z.discriminatedUnion('playerActionType', [
+  HangmanPlayerPicksHiddenWordSchema,
+  HangmanPlayerGuessLetterSchema,
+  HangmanPlayerCancelGameSchema,
+])
+
+export type HangmanPlayerAction = z.infer<typeof HangmanPlayerActionSchema>;
+
+
+// Legacy action schemas for backward compatibility with UI components
+export const HangmanActionPlayerPicksHiddenWordSchema = z.object({
+  actionType: z.literal(HANGMAN_GAME_TABLE_ACTION_PLAYER_PICKS_HIDDEN_WORD),
+  seat: GameTableSeatSchema,
+  hiddenWordInfo: HiddenWordInfoSchema,
+})
+
+export type HangmanActionPlayerPicksHiddenWord = z.infer<typeof HangmanActionPlayerPicksHiddenWordSchema>;
 
 
 export const HangmanActionGuessLetterSchema = z.object({
@@ -143,13 +153,27 @@ export const HangmanActionCancelGameSchema = z.object({
 export type HangmanActionCancelGame = z.infer<typeof HangmanActionCancelGameSchema>;
 
 
+export const HangmanActionHostFinalizesHiddenWordActionSchema = z.object({
+  actionType: z.literal(HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD),
+  wordSource: z.discriminatedUnion('source', [
+    z.object({
+      source: z.literal('player'),
+      seat: GameTableSeatSchema,
+    }),
+    z.object({
+      source: z.literal('internal-word-list'),
+    }),
+  ]),
+})
+
+export type HangmanActionHostFinalizesHiddenWordAction = z.infer<typeof HangmanActionHostFinalizesHiddenWordActionSchema>;
+
+
 export const HangmanGameActionSchema = z.discriminatedUnion('actionType', [
-  HangmanActionStartGameSchema,
   HangmanActionPlayerPicksHiddenWordSchema,
-  // HangmanActionHostChoosesHiddenWordSourceRandomSchema,
-  HangmanActionHostFinalizesHiddenWordActionSchema,
   HangmanActionGuessLetterSchema,
   HangmanActionCancelGameSchema,
+  HangmanActionHostFinalizesHiddenWordActionSchema,
 ])
 
 export type HangmanGameAction = z.infer<typeof HangmanGameActionSchema>;
@@ -160,7 +184,7 @@ export const PlayerStateSchema = z.object({
 })
 
 
-export const HangmanGameStateSchema = z.object({
+export const HangmanGameStateSchema = BfgGameSpecificGameStateSchema.extend({
   isGameOver: z.boolean(),
   outcomeSummary: z.string().optional(),
 
@@ -169,7 +193,7 @@ export const HangmanGameStateSchema = z.object({
   playerHiddenWordSubmissions: z.array(PlayerHiddenWordSubmissionSchema)
     .default([]),
 
-  hiddenWordSource: HangmanActionHostFinalizesHiddenWordActionSchema.nullable(),
+  hiddenWordSource: HangmanSetupGameSchema.nullable(),
   hiddenWordInfo: HiddenWordInfoSchema.nullable(),
 
   lettersGuessed: z.array(LetterChoiceSchema),
@@ -193,13 +217,15 @@ export type HangmanGameState = z.infer<typeof HangmanGameStateSchema>;
 
 
 const createInitialGameState = (
-  initialGameTableAction: HangmanGameAction,
+  _gameTable: GameTable,
+  initialGameTableAction: BfgGameSpecificTableAction<HangmanHostAction>,
 ): HangmanGameState => {
 
-  if (initialGameTableAction.actionType !== 'game-table-action-host-start-game') {
+  if (initialGameTableAction.gameSpecificAction.hostActionType !== HANGMAN_HOST_ACTION_STARTS_GAME) {
     throw new Error("Initial game table action must be a host start game");
   }
 
+  // Create initial state with no word source - host will set it up
   const retVal: HangmanGameState = {
     isGameOver: false,
     outcomeSummary: undefined,
@@ -208,7 +234,7 @@ const createInitialGameState = (
     hiddenWordSource: null,
     hiddenWordInfo: null,
     lettersGuessed: [],
-    hiddenWordState: '',
+    hiddenWordState: "",
     playerStates: {
       'p1': { lettersGuessed: [], },
       'p2': { lettersGuessed: [], },
@@ -227,11 +253,13 @@ const createInitialGameState = (
 
 const createInitialHangmanGameTableAction = (
   // _gameTable: NewGameTable,
-): BfgGameSpecificTableAction<HangmanGameAction> => {
+): BfgGameSpecificTableAction<HangmanHostAction> => {
   return {
-    actionType: 'game-table-action-host-starts-game',
+    actionType: HANGMAN_HOST_ACTION_STARTS_GAME,
     gameSpecificAction: {
-      actionType: HANGMAN_GAME_TABLE_ACTION_START_GAME,
+      source: 'host',
+      hostActionType: HANGMAN_HOST_ACTION_STARTS_GAME,
+      wordSource: { source: 'internal-word-list' }, // Default to internal word list
     },
     gameTableActionId: BfgGameTableActionId.createId(),
     source: 'game-table-action-source-host',
@@ -241,19 +269,19 @@ const createInitialHangmanGameTableAction = (
 
 const _applyPlayerPicksHiddenWordAction = (
   gameState: HangmanGameState,
-  gameAction: HangmanActionPlayerPicksHiddenWord,
+  gameAction: HangmanPlayerPicksHiddenWord,
 ): GameTableActionResult<HangmanGameState> => {
   
   const hiddenWord = gameAction.hiddenWordInfo.hiddenWord;
   const numberOfWrongGuessesToLose = gameAction.hiddenWordInfo.numberOfWrongGuessesToLose;
 
-  const summary = `Player ${gameAction.seat} chose ${hiddenWord} and set the number of wrong guesses to lose to ${numberOfWrongGuessesToLose}`;
+  const summary = `Player ${gameAction.playerSeat} chose ${hiddenWord} and set the number of wrong guesses to lose to ${numberOfWrongGuessesToLose}`;
 
   const updatedPlayerHiddenWordSubmissions = [
     ...gameState.playerHiddenWordSubmissions
-      .filter(submission => submission.seat !== gameAction.seat), 
+      .filter(submission => submission.seat !== gameAction.playerSeat), 
     {
-      seat: gameAction.seat,
+      seat: gameAction.playerSeat,
       info: gameAction.hiddenWordInfo,
     },
   ];
@@ -313,62 +341,9 @@ const _applyPlayerPicksHiddenWordAction = (
 // }
 
 
-const _applyHostFinalizesHiddenWordAction = (
-  gameState: HangmanGameState,
-  gameAction: HangmanActionHostFinalizesHiddenWordAction,
-): GameTableActionResult<HangmanGameState> => {
-
-  // if (!gameState.hiddenWordSetup) {
-  //   return {
-  //     tablePhase: 'table-phase-error',
-  //     gameSpecificState: gameState,
-  //     gameSpecificStateSummary: `Hidden word not set`,
-  //   }
-  // }
-
-  const getHiddenWordInfo = (): HiddenWordInfo => {
-
-    if (gameAction.source.source === 'player') {
-      const playerSource = gameAction.source;
-      const playerSeat = playerSource.seat;
-      const info = gameState.playerHiddenWordSubmissions.find(submission => 
-        submission.seat === playerSeat)?.info;
-      if (!info) {
-        throw new Error("Player hidden word submission not found");
-      }
-      return info;
-    }
-
-    if (gameAction.source.source === 'internal-word-list') {
-      return getWordInfoFromInternalWordList();
-    }
-
-    throw new Error(`Invalid hidden word source`);
-  }
-
-  const hiddenWordInfo = getHiddenWordInfo();
-
-  const hiddenWord = hiddenWordInfo.hiddenWord.toUpperCase();
-  const numberOfWrongGuessesToLose = hiddenWordInfo.numberOfWrongGuessesToLose;
-  const summary = `Host finalized ${hiddenWord} as the hidden word and set the number of wrong guesses to lose to ${numberOfWrongGuessesToLose}`;
-
-  const updatedHiddenWordState = "-".repeat(hiddenWord.length);
-
-  return {
-    tablePhase: 'table-phase-game-in-progress',
-    gameSpecificState: {
-      ...gameState,
-      hiddenWordInfo: { hiddenWord, numberOfWrongGuessesToLose },
-      hiddenWordState: updatedHiddenWordState,
-    },
-    gameSpecificStateSummary: summary,
-  }
-}
-
-
 const _applyPlayerGuessLetterAction = (
   gameState: HangmanGameState,
-  gameAction: HangmanActionGuessLetter,
+  gameAction: HangmanPlayerGuessLetter,
 ): GameTableActionResult<HangmanGameState> => {
 
   if (!gameState.hiddenWordInfo) {
@@ -434,7 +409,7 @@ const _applyPlayerGuessLetterAction = (
       gameSpecificState: {
         ...gameState,
         isGameOver: true,
-        outcomeSummary: `Player ${gameAction.seat} won! The word was ${hiddenWord}`,
+        outcomeSummary: `Player ${gameAction.playerSeat} won! The word was ${hiddenWord}`,
         lettersGuessed: updatedLettersGuessed,
         hiddenWordState: updatedHiddenWordState,
       },
@@ -454,95 +429,118 @@ const _applyPlayerGuessLetterAction = (
 }
 
 
-const applyHangmanGameAction = (
+const applyHangmanPlayerAction = async (
   _tableState: GameTable,
   gameState: HangmanGameState,
-  gameAction: HangmanGameAction,
-): GameTableActionResult<HangmanGameState> => {
+  playerAction: HangmanPlayerAction,
+): Promise<GameTableActionResult<HangmanGameState>> => {
 
-  console.log("APPLY HANGMAN GAME ACTION - GAME STATE", gameState);
-  console.log("APPLY HANGMAN GAME ACTION - GAME ACTION", gameAction);
+  console.log("APPLY HANGMAN PLAYER ACTION - GAME STATE", gameState);
+  console.log("APPLY HANGMAN PLAYER ACTION - PLAYER ACTION", playerAction);
 
-
-  if (gameAction.actionType === HANGMAN_GAME_TABLE_ACTION_PLAYER_PICKS_HIDDEN_WORD) {
-
-    const actionResult = _applyPlayerPicksHiddenWordAction(gameState, gameAction);
+  if (playerAction.playerActionType === HANGMAN_PLAYER_ACTION_PICKS_HIDDEN_WORD) {
+    const actionResult = _applyPlayerPicksHiddenWordAction(gameState, playerAction);
     return actionResult;
   } 
 
-  // if (gameAction.actionType === HANGMAN_GAME_TABLE_ACTION_HOST_CHOOSES_RANDOM_HIDDEN_WORD) {
-
-  //   const actionResult = _applyHostChoosesHiddenWordSourceRandomAction(gameState, gameAction);
-  //   return actionResult;
-  // } 
-
-  if (gameAction.actionType === HANGMAN_GAME_TABLE_ACTION_HOST_FINALIZES_HIDDEN_WORD) {
-
-    const actionResult = _applyHostFinalizesHiddenWordAction(gameState, gameAction);
+  if (playerAction.playerActionType === HANGMAN_PLAYER_ACTION_GUESS_LETTER) {
+    const actionResult = _applyPlayerGuessLetterAction(gameState, playerAction);
     return actionResult;
   }
 
-  if (gameAction.actionType === HANGMAN_GAME_TABLE_ACTION_PLAYER_GUESS_LETTER) {
-
-    const actionResult = _applyPlayerGuessLetterAction(gameState, gameAction);
-    return actionResult;
-  }
-
-  if (gameAction.actionType === HANGMAN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME) {
+  if (playerAction.playerActionType === HANGMAN_PLAYER_ACTION_CANCEL_GAME) {
     return {
       tablePhase: 'table-phase-game-abandoned',
       gameSpecificState: {
         ...gameState,
         isGameOver: true,
-        outcomeSummary: gameAction.cancellationReason,
+        outcomeSummary: playerAction.cancellationReason,
       },
-      gameSpecificStateSummary: gameAction.cancellationReason,
+      gameSpecificStateSummary: playerAction.cancellationReason,
     }
   }
 
   return {
     tablePhase: 'table-phase-error',
     gameSpecificState: gameState,
-    gameSpecificStateSummary: `Error - invalid game action: ${gameAction.actionType}`,
+    gameSpecificStateSummary: `Error - invalid player action: ${(playerAction as any).playerActionType}`,
   };
 }
 
 
-const hangmanRendererFactory: BfgGameEngineRendererFactory<
-  typeof HangmanGameStateSchema,
-  typeof HangmanGameActionSchema
-> = {
-  createGameStateHostComponent: createHangmanHostComponent,
-  createGameStateRepresentationComponent: createHangmanRepresentation,
-  createGameStateActionInputComponent: createHangmanInput,
-  createGameStateCombinationRepresentationAndInputComponent: createHangmanComboRepresentationAndInput,
+const applyHangmanHostAction = async (
+  _tableState: GameTable,
+  gameState: HangmanGameState,
+  hostAction: HangmanHostAction,
+): Promise<GameTableActionResult<HangmanGameState>> => {
+
+  console.log("APPLY HANGMAN HOST ACTION - GAME STATE", gameState);
+  console.log("APPLY HANGMAN HOST ACTION - HOST ACTION", hostAction);
+
+  if (hostAction.hostActionType === HANGMAN_HOST_ACTION_STARTS_GAME) {
+    // Create a new game state with the selected word source
+    const getHiddenWordInfo = (): HiddenWordInfo => {
+      if (hostAction.wordSource.source === 'player') {
+        // Find the player submission
+        const playerSubmission = gameState.playerHiddenWordSubmissions.find(
+          submission => submission.seat === (hostAction.wordSource as any).seat
+        );
+        if (playerSubmission) {
+          return playerSubmission.info;
+        }
+        // Fallback if player submission not found
+        return {
+          hiddenWord: 'DEFAULT',
+          numberOfWrongGuessesToLose: 6,
+        };
+      }
+
+      if (hostAction.wordSource.source === 'internal-word-list') {
+        return getWordInfoFromInternalWordList();
+      }
+
+      throw new Error(`Invalid hidden word source`);
+    }
+
+    const hiddenWordInfo = getHiddenWordInfo();
+    const hiddenWord = hiddenWordInfo.hiddenWord.toUpperCase();
+    const numberOfWrongGuessesToLose = hiddenWordInfo.numberOfWrongGuessesToLose;
+    const hiddenWordState = "-".repeat(hiddenWord.length);
+
+    const newGameState: HangmanGameState = {
+      ...gameState,
+      hiddenWordSource: hostAction,
+      hiddenWordInfo: { hiddenWord, numberOfWrongGuessesToLose },
+      hiddenWordState,
+      numberOfWrongGuesses: 0,
+      lettersGuessed: [],
+      isGameOver: false,
+      outcomeSummary: undefined,
+    };
+
+    return {
+      tablePhase: 'table-phase-game-in-progress',
+      gameSpecificState: newGameState,
+      gameSpecificStateSummary: 'Game started',
+    };
+  }
+
+  return {
+    tablePhase: 'table-phase-error',
+    gameSpecificState: gameState,
+    gameSpecificStateSummary: `Error - invalid host action: ${hostAction.hostActionType}`,
+  };
 }
 
 
-const hangmanProcessorImplementation: IBfgGameEngineProcessor<
-  typeof HangmanGameStateSchema,
-  typeof HangmanGameActionSchema
+export const HangmanGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
+  HangmanGameState,
+  HangmanPlayerAction,
+  HangmanHostAction
 > = {
   gameTitle: HangmanGameName,
-  
-  applyGameAction: applyHangmanGameAction,
-  createInitialGameSpecificState: createInitialGameState,
-  createInitialGameTableAction: createInitialHangmanGameTableAction,
-
-  createGameStateHostComponent: createHangmanHostComponent,
-  createGameStateRepresentationComponent: createHangmanRepresentation,
-  createGameStateActionInputComponent: createHangmanInput,
-
-  createGameStateCombinationRepresentationAndInputComponent: undefined,
-}
-
-
-
-export const HangmanGameStateProcessor = createBfgGameEngineProcessor(
-  HangmanGameName,
-  HangmanGameStateSchema,
-  HangmanGameActionSchema,
-
-  hangmanProcessorImplementation,
-  hangmanRendererFactory,
-);
+  createGameSpecificInitialAction: createInitialHangmanGameTableAction,
+  createGameSpecificInitialState: createInitialGameState,
+  applyPlayerAction: applyHangmanPlayerAction,
+  applyHostAction: applyHangmanHostAction,
+};
