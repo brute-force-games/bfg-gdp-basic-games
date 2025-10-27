@@ -1,5 +1,5 @@
 import { TicTacToeMove, TicTacToeGameState, TicTacToeMoveCell, getPlayerSeatSymbol, getCurrentPlayer } from "../engine/tic-tac-toe-engine";
-import { Button, Typography, Box } from "@bfg-engine/ui/bfg-ui";
+import { Button, Typography, Box, Stack } from "@bfg-engine/ui/bfg-ui";
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 
 
@@ -41,45 +41,47 @@ export const TicTacToeGrid = (props: TicTacToeGridProps) => {
   };
 
   return (
-    <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-      <Box 
-        style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '8px', 
-          width: 'fit-content' 
-        }}
-      >
-        {gameState.board.split('').map((cell, index) => (
-          <Button
-            key={index}
-            variant="outlined"
-            onClick={() => {
-              console.log("onClick", index);
-              handleCellClick(index);
-            }}
-            disabled={cell !== '-' || gameState.resolution !== 'game-in-progress' || !isMyTurn}
-            style={{
-              width: '64px',
-              height: '64px',
-              fontSize: '2rem',
-              fontWeight: 'bold',
-              minWidth: '64px',
-            }}
-          >
-            {cell === '-' ? '' : cell}
-          </Button>
-        ))}
-      </Box>
-      <Typography variant="h6" style={{ fontWeight: 600 }}>
-        {gameState.resolution === 'game-in-progress' 
-          ? `Current player: ${currentPlayerSymbol} [I am ${myPlayerSeatSymbol}]`
-          : gameState.resolution === 'game-over-draw'
-            ? "Game Over - Draw!"
-            : gameState.resolution === 'game-over-x-wins'
-              ? "Game Over - X Wins!"
-              : "Game Over - O Wins!"}
-      </Typography>
+    <Box>
+      <Stack spacing={3} alignItems="center">
+        <Box 
+          style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(3, 1fr)', 
+            gap: '8px', 
+            width: 'fit-content' 
+          }}
+        >
+          {gameState.board.split('').map((cell, index) => (
+            <Button
+              key={index}
+              variant="outlined"
+              onClick={() => {
+                console.log("onClick", index);
+                handleCellClick(index);
+              }}
+              disabled={cell !== '-' || gameState.resolution !== 'game-in-progress' || !isMyTurn}
+              style={{
+                width: '64px',
+                height: '64px',
+                fontSize: '2rem',
+                fontWeight: 'bold',
+                minWidth: '64px',
+              }}
+            >
+              {cell === '-' ? '' : cell}
+            </Button>
+          ))}
+        </Box>
+        <Typography variant="h6" style={{ fontWeight: 600 }}>
+          {gameState.resolution === 'game-in-progress' 
+            ? `Current player: ${currentPlayerSymbol} [I am ${myPlayerSeatSymbol}]`
+            : gameState.resolution === 'game-over-draw'
+              ? "Game Over - Draw!"
+              : gameState.resolution === 'game-over-x-wins'
+                ? "Game Over - X Wins!"
+                : "Game Over - O Wins!"}
+        </Typography>
+      </Stack>
     </Box>
   );
 };

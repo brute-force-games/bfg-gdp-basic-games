@@ -1,5 +1,6 @@
-import { TicTacToeGameState } from "~/types/bfg-game-engines/tic-tac-toe-engine";
-import { GameTableSeat } from "~/models/game-table/game-table";
+import { TicTacToeGameState } from "../engine/tic-tac-toe-engine";
+import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+import { Box, Typography, Stack } from "@bfg-engine/ui/bfg-ui";
 
 
 interface TicTacToeInputProps {
@@ -11,10 +12,14 @@ export const TicTacToeInput = (props: TicTacToeInputProps) => {
   const { myPlayerSeat, gameState } = props;
 
   return (
-    <div>
-      <div>Tic Tac Toe Input</div>
-      <div>My Player Seat: {myPlayerSeat}</div>
-      <div>Game State: {JSON.stringify(gameState)}</div>
-    </div>
+    <Box>
+      <Stack spacing={2}>
+        <Typography variant="h6">Tic Tac Toe Input</Typography>
+        <Typography variant="body1">My Player Seat: {myPlayerSeat}</Typography>
+        <Typography variant="body2" color="secondary">
+          Game State: {JSON.stringify(gameState)}
+        </Typography>
+      </Stack>
+    </Box>
   );
 }
