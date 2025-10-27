@@ -2,22 +2,25 @@ import { HangmanGameState, HangmanPlayerAction, HANGMAN_PLAYER_ACTION_PICKS_HIDD
 import { PlayerComponentProps } from '@bfg-engine/models/game-engine/bfg-game-engine-types';
 import { HangmanRepresentation } from '../representation/hangman-representation';
 import { HangmanInput } from '../hangman-input';
+import { Typography, Stack } from '@bfg-engine/ui/bfg-ui';
+import { convertDbGameTableActionToHangmanGameAction } from '../hangman-action-converter';
 
 export const HangmanPlayerComponent = (props: PlayerComponentProps<HangmanGameState, HangmanPlayerAction>) => {
-  const { gameState, currentPlayerSeat, onPlayerAction } = props;
+  const { gameState, currentPlayerSeat, onPlayerAction, latestGameAction } = props;
   
+  const mostRecentAction = convertDbGameTableActionToHangmanGameAction(latestGameAction);
   return (
-    <div>
-      <h3>Hangman - Player View</h3>
+    <Stack spacing={3}>
+      <Typography variant="h4">Hangman - Player View</Typography>
       <HangmanRepresentation 
         myPlayerSeat={currentPlayerSeat}
         gameState={gameState}
-        mostRecentAction={undefined as any}
+        mostRecentAction={mostRecentAction}
       />
       <HangmanInput
         myPlayerSeat={currentPlayerSeat}
         gameState={gameState}
-        mostRecentAction={undefined as any}
+        mostRecentAction={convertDbGameTableActionToHangmanGameAction(latestGameAction) || undefined as any}
         onGameAction={(_, gameAction) => {
           // Convert old game action format to new player action format
           if (gameAction.actionType === HANGMAN_PLAYER_ACTION_PICKS_HIDDEN_WORD) {
@@ -47,6 +50,6 @@ export const HangmanPlayerComponent = (props: PlayerComponentProps<HangmanGameSt
           }
         }}
       />
-    </div>
+    </Stack>
   );
 };

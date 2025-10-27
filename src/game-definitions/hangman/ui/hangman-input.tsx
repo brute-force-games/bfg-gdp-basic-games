@@ -9,6 +9,7 @@ import {
 } from "../engine/hangman-engine";
 import { getHiddenWordStatusLabel, isHangmanGuessingActive } from "./hangman-utils";
 import { HangmanLetterInput } from "./hangman-letter-input";
+import { Button, Card, TextField, Stack, Typography, Alert } from '@bfg-engine/ui/bfg-ui';
 
 
 interface HangmanInputProps {
@@ -84,22 +85,18 @@ export const HangmanInput = ({
   // If game is over, show game over message
   if (gameState.isGameOver) {
     return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <div style={{ 
-          padding: "15px", 
-          backgroundColor: gameState.outcomeSummary?.includes('won') ? '#d4edda' : '#f8d7da',
-          border: `1px solid ${gameState.outcomeSummary?.includes('won') ? '#c3e6cb' : '#f5c6cb'}`,
-          borderRadius: "8px",
-          fontSize: "18px",
-          fontWeight: "bold",
-          color: gameState.outcomeSummary?.includes('won') ? '#155724' : '#721c24'
-        }}>
-          {gameState.outcomeSummary || "Game Over"}
-        </div>
-        <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
+      <Stack spacing={2} style={{ padding: "20px", textAlign: "center" }}>
+        <Alert 
+          severity={gameState.outcomeSummary?.includes('won') ? 'success' : 'error'}
+        >
+          <Typography variant="h6" style={{ fontWeight: "bold" }}>
+            {gameState.outcomeSummary || "Game Over"}
+          </Typography>
+        </Alert>
+        <Typography variant="body2" color="secondary">
           The word was: <strong>{gameState.hiddenWordInfo?.hiddenWord}</strong>
-        </div>
-      </div>
+        </Typography>
+      </Stack>
     );
   }
 
@@ -131,25 +128,19 @@ export const HangmanInput = ({
   // if (!gameState.hiddenWordInfo) {
     if (!showWordInput) {
       return (
-        <div style={{ padding: "20px", textAlign: "center" }}>
-          <div style={{ marginBottom: "20px", fontSize: "18px" }}>
+        <Stack spacing={2} style={{ padding: "20px", textAlign: "center" }}>
+          <Typography variant="h6">
             {hiddenWordStatusLabel}
-          </div>
-          <button 
+          </Typography>
+          <Button 
             onClick={() => setShowWordInput(true)}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer"
-            }}
+            variant="contained"
+            color="primary"
+            size="large"
           >
             Set Hidden Word
-          </button>
-        </div>
+          </Button>
+        </Stack>
       );
     }
 
@@ -162,82 +153,47 @@ export const HangmanInput = ({
     // }
 
     return (
-      <div style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
-        <h3 style={{ marginBottom: "20px", textAlign: "center" }}>Set Hidden Word</h3>
-        
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
-            Hidden Word:
-          </label>
-          <input
-            type="text"
+      <Card>
+        <Stack spacing={3} style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
+          <Typography variant="h5" align="center">Set Hidden Word</Typography>
+          
+          <TextField
+            label="Hidden Word"
             value={hiddenWord}
             onChange={(e) => setHiddenWord(e.target.value)}
             placeholder="Enter the word to guess"
-            style={{
-              width: "100%",
-              padding: "8px",
-              fontSize: "16px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              boxSizing: "border-box"
-            }}
+            fullWidth
             maxLength={20}
           />
-        </div>
 
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
-            Wrong Guesses Limit:
-          </label>
-          <input
+          <TextField
+            label="Wrong Guesses Limit"
             type="number"
             value={wrongGuessesLimit}
             onChange={(e) => setWrongGuessesLimit(parseInt(e.target.value) || 6)}
-            min="1"
-            max="10"
-            style={{
-              width: "100%",
-              padding: "8px",
-              fontSize: "16px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              boxSizing: "border-box"
-            }}
+            fullWidth
+            min={1}
+            max={10}
           />
-        </div>
 
-        <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-          <button
-            onClick={handleSetHiddenWord}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer"
-            }}
-          >
-            Set Word
-          </button>
-          <button
-            onClick={handleCancelWordInput}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#6c757d",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer"
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
+          <Stack direction="row" spacing={2} justifyContent="center">
+            <Button
+              onClick={handleSetHiddenWord}
+              variant="contained"
+              color="success"
+            >
+              Set Word
+            </Button>
+            <Button
+              onClick={handleCancelWordInput}
+              variant="outlined"
+              color="secondary"
+            >
+              Cancel
+            </Button>
+          </Stack>
+        </Stack>
+      </Card>
     );
   // }
 

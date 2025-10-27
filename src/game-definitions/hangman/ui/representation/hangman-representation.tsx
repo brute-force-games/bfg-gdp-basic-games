@@ -2,42 +2,33 @@ import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { HangmanGameAction, HangmanGameState } from "../../engine/hangman-engine";
 import { HangmanStickFigure } from "./hangman-stick-figure";
 import { getHiddenWordStatusLabel, isHangmanGuessingActive } from "../hangman-utils";
+import { Alert, Card, Stack, Typography, Container } from '@bfg-engine/ui/bfg-ui';
 
 
 interface HangmanRepresentationProps {
   myPlayerSeat: GameTableSeat | null;
   gameState: HangmanGameState;
-  mostRecentAction: HangmanGameAction;
+  mostRecentAction: HangmanGameAction | null;
 }
 
 export const HangmanRepresentation = ({
   myPlayerSeat,
   gameState,
 }: HangmanRepresentationProps) => {
-  // const isGameActive = isHangmanGuessingActive(gameState);
-
-  // if (!isGameActive) {
-  //   console.log('HangmanRepresentation: isGameActive', gameState);
-  //   return (
-  //     <div>
-  //       Waiting for game to start...
-  //     </div>
-  //   );
-  // }
-
 
   const gameActive = isHangmanGuessingActive(gameState);
 
-  console.log("createHangmanRepresentation", gameActive);
-
-  // If game is not active and not over, show status label
   if (!gameActive && !gameState.isGameOver) {
     const hiddenWordStatusLabel = getHiddenWordStatusLabel(gameState, myPlayerSeat);
 
     return (
-      <div>
-        {hiddenWordStatusLabel}
-      </div>
+      <Container maxWidth="sm">
+        <Alert severity="info">
+          <Typography variant="h6" align="center">
+            {hiddenWordStatusLabel}
+          </Typography>
+        </Alert>
+      </Container>
     );
   }
 
@@ -50,39 +41,57 @@ export const HangmanRepresentation = ({
   const wrongGuesses = gameState.numberOfWrongGuesses;
 
   return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      {/* <h3>Hangman Game</h3> */}
-      
-      {/* Game Outcome */}
-      {gameState.isGameOver && (
-        <div style={{ 
-          padding: '10px', 
-          backgroundColor: gameState.outcomeSummary?.includes('won') ? '#d4edda' : '#f8d7da',
-          border: `1px solid ${gameState.outcomeSummary?.includes('won') ? '#c3e6cb' : '#f5c6cb'}`,
-          borderRadius: '4px',
-          margin: '10px 0'
-        }}>
-          {gameState.outcomeSummary}
-        </div>
-      )}
+    <Container maxWidth="md">
+      <Stack spacing={3} alignItems="center">
+        {/* Game Outcome */}
+        {gameState.isGameOver && (
+          <Alert 
+            severity={gameState.outcomeSummary?.includes('won') ? 'success' : 'error'}
+            style={{ width: '100%' }}
+          >
+            <Typography variant="h6" align="center">
+              {gameState.outcomeSummary}
+            </Typography>
+          </Alert>
+        )}
 
-      {/* Word Display */}
-      {gameState.hiddenWordState && (
-        <div style={{ margin: '20px 0', fontSize: '24px', letterSpacing: '8px', fontFamily: 'monospace' }}>
-          {gameState.hiddenWordState}
-        </div>
-      )}
+        {/* Word Display */}
+        {gameState.hiddenWordState && (
+          <Card>
+            <Stack spacing={2} style={{ padding: "20px" }}>
+              <Typography variant="h4" align="center" style={{ 
+                letterSpacing: '8px', 
+                fontFamily: 'monospace',
+                fontWeight: 'bold'
+              }}>
+                {gameState.hiddenWordState}
+              </Typography>
+            </Stack>
+          </Card>
+        )}
 
-      {/* Stick Figure */}
-      <HangmanStickFigure wrongGuesses={wrongGuesses} maxWrongGuesses={maxWrongGuesses} />
+        {/* Stick Figure */}
+        <Card>
+          <Stack spacing={2} style={{ padding: "20px" }}>
+            <HangmanStickFigure wrongGuesses={wrongGuesses} maxWrongGuesses={maxWrongGuesses} />
+          </Stack>
+        </Card>
 
-      {/* Game Status */}
-      <div style={{ margin: '20px 0' }}>
-        <div>Wrong Guesses: {wrongGuesses} / {maxWrongGuesses}</div>
-        <div>Letters Guessed: {gameState.lettersGuessed.join(', ')}</div>
-      </div>
-
-
-    </div>
+        {/* Game Status */}
+        <Card>
+          <Stack spacing={2} style={{ padding: "16px" }}>
+            <Typography variant="h6" align="center">Game Status</Typography>
+            <Stack spacing={1}>
+              <Typography variant="body1" align="center">
+                <strong>Wrong Guesses:</strong> {wrongGuesses} / {maxWrongGuesses}
+              </Typography>
+              <Typography variant="body1" align="center">
+                <strong>Letters Guessed:</strong> {gameState.lettersGuessed.join(', ') || 'None'}
+              </Typography>
+            </Stack>
+          </Stack>
+        </Card>
+      </Stack>
+    </Container>
   );
 };

@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { LetterChoice } from "../engine/hangman-engine";
+import { Button, Card, Stack, Typography, Container } from '@bfg-engine/ui/bfg-ui';
 
 interface HangmanLetterInputProps {
   disabledLetters: LetterChoice[];
@@ -43,48 +44,6 @@ export const HangmanLetterInput = ({
     return disabledLetters.includes(letter);
   };
 
-  const getLetterButtonStyle = (letter: LetterChoice) => {
-    const baseStyle = {
-      padding: "12px 16px",
-      margin: "4px",
-      borderWidth: "2px",
-      borderStyle: "solid",
-      borderColor: "#ddd",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      cursor: "pointer",
-      fontSize: "16px",
-      fontWeight: "bold",
-      minWidth: "40px",
-      textAlign: "center" as const,
-      transition: "all 0.2s ease",
-      userSelect: "none" as const,
-    };
-
-    if (isLetterDisabled(letter)) {
-      return {
-        ...baseStyle,
-        backgroundColor: "#f5f5f5",
-        color: "#ccc",
-        cursor: "not-allowed",
-        borderColor: "#eee",
-      };
-    }
-
-    // Selected letter styling
-    if (selectedLetter === letter) {
-      return {
-        ...baseStyle,
-        backgroundColor: "#007bff",
-        color: "#fff",
-        borderColor: "#007bff",
-        transform: "scale(1.05)",
-      };
-    }
-
-    return baseStyle;
-  };
-
   const keyboardRows = [
     alphabet.slice(0, 7),   // A-G
     alphabet.slice(7, 14),  // H-N
@@ -93,96 +52,65 @@ export const HangmanLetterInput = ({
   ];
 
   return (
-    <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
-      <div style={{ 
-        display: "flex", 
-        alignItems: "flex-start", 
-        gap: "30px",
-        justifyContent: "center"
-      }}>
-        {/* Letter keyboard */}
-        <div style={{ flex: "0 0 auto" }}>
-          {keyboardRows.map((row, rowIndex) => (
-            <div 
-              key={rowIndex} 
-              style={{ 
-                display: "flex", 
-                justifyContent: "center", 
-                flexWrap: "wrap",
-                marginBottom: "8px"
-              }}
-            >
-              {row.map((letter) => (
-                <button
-                  key={letter}
-                  onClick={() => handleLetterClick(letter)}
-                  disabled={isLetterDisabled(letter)}
-                  style={getLetterButtonStyle(letter)}
-                >
-                  {letter}
-                </button>
+    <Container maxWidth="lg">
+      <Card>
+        <Stack spacing={3} style={{ padding: "20px" }}>
+          <Typography variant="h6" align="center">Choose a Letter</Typography>
+          
+          <Stack direction="row" spacing={4} justifyContent="center" alignItems="flex-start">
+            {/* Letter keyboard */}
+            <Stack spacing={1}>
+              {keyboardRows.map((row, rowIndex) => (
+                <Stack key={rowIndex} direction="row" spacing={1} justifyContent="center">
+                  {row.map((letter) => (
+                    <Button
+                      key={letter}
+                      onClick={() => handleLetterClick(letter)}
+                      disabled={isLetterDisabled(letter)}
+                      variant={selectedLetter === letter ? "contained" : "outlined"}
+                      color={selectedLetter === letter ? "primary" : "secondary"}
+                      size="small"
+                      style={{ 
+                        minWidth: "40px", 
+                        minHeight: "40px",
+                        fontSize: "16px",
+                        fontWeight: "bold"
+                      }}
+                    >
+                      {letter}
+                    </Button>
+                  ))}
+                </Stack>
               ))}
-            </div>
-          ))}
-        </div>
+            </Stack>
 
-        {/* Submit button */}
-        <div style={{ 
-          display: "flex", 
-          flexDirection: "column", 
-          justifyContent: "center",
-          minHeight: "200px"
-        }}>
-          <button
-            onClick={handleSubmit}
-            disabled={!selectedLetter}
-            style={{
-              padding: "12px 32px",
-              fontSize: "16px",
-              fontWeight: "bold",
-              backgroundColor: selectedLetter ? "#28a745" : "#ccc",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: selectedLetter ? "pointer" : "not-allowed",
-              transition: "all 0.2s ease",
-              minWidth: "120px",
-            }}
-            onMouseEnter={(e) => {
-              if (selectedLetter) {
-                e.currentTarget.style.backgroundColor = "#218838";
-                e.currentTarget.style.transform = "scale(1.05)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (selectedLetter) {
-                e.currentTarget.style.backgroundColor = "#28a745";
-                e.currentTarget.style.transform = "scale(1)";
-              }
-            }}
-          >
-            Submit Guess
-          </button>
-        </div>
-      </div>
+            {/* Submit button */}
+            <Stack justifyContent="center" style={{ minHeight: "200px" }}>
+              <Button
+                onClick={handleSubmit}
+                disabled={!selectedLetter}
+                variant="contained"
+                color="success"
+                size="large"
+                style={{ minWidth: "120px" }}
+              >
+                Submit Guess
+              </Button>
+            </Stack>
+          </Stack>
 
-      {/* {disabledLetters.length > 0 && (
-        <div style={{
-          marginTop: "16px",
-          padding: "12px",
-          backgroundColor: "#fff3cd",
-          borderRadius: "8px",
-          border: "1px solid #ffeaa7"
-        }}>
-          <div style={{ 
-            fontSize: "14px", 
-            color: "#856404",
-            textAlign: "center"
-          }}>
-            <strong>Already guessed:</strong> {disabledLetters.join(", ")}
-          </div>
-        </div>
-      )} */}
-    </div>
+          {/* Already guessed letters */}
+          {disabledLetters.length > 0 && (
+            <Card>
+              <Stack spacing={1} style={{ padding: "12px" }}>
+                <Typography variant="body2" align="center" color="secondary">
+                  <strong>Already guessed:</strong> {disabledLetters.join(", ")}
+                </Typography>
+              </Stack>
+            </Card>
+          )}
+        </Stack>
+      </Card>
+    </Container>
   );
 };
