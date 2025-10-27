@@ -1,5 +1,6 @@
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { FlipACoinPlayerAction, FlipACoinGameState, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
+import { Box, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 
 
 
@@ -16,9 +17,11 @@ export const FlipACoinRepresentation = (props: FlipACoinRepresentationProps) => 
 
   if (gameState.isGameOver) {
     return (
-      <div>
-        <div>Game is complete - {gameState.outcomeSummary}</div>
-      </div>
+      <Box>
+        <Typography variant="h6" color="primary">
+          Game is complete - {gameState.outcomeSummary}
+        </Typography>
+      </Box>
     );
   }
 
@@ -52,22 +55,32 @@ export const FlipACoinRepresentation = (props: FlipACoinRepresentationProps) => 
 
   if (gameState.isFlipped) {
     return (
-      <>
-        <div>
-          A {coinType} was flipped and got {gameState.flipResult}
-        </div>
-        <div>My preferred outcome: {preferredOutcome}</div>
-        <div>
-          {outcomeResult}
-        </div>
-      </>
+      <Box>
+        <Stack spacing={2}>
+          <Typography variant="h6">
+            A {coinType} was flipped and got {gameState.flipResult}
+          </Typography>
+          <Typography variant="body1">
+            My preferred outcome: {preferredOutcome}
+          </Typography>
+          <Typography variant="h4" color={outcomeResult === ':(' ? 'error' : 'primary'}>
+            {outcomeResult}
+          </Typography>
+        </Stack>
+      </Box>
     );
   }
 
   return (
-    <>
-      <div>Flipping a {coinType}</div>
-      <div>My preferred outcome: {preferredOutcome}</div>
-    </>
+    <Box>
+      <Stack spacing={2}>
+        <Typography variant="h6">
+          Flipping a {coinType}
+        </Typography>
+        <Typography variant="body1">
+          My preferred outcome: {preferredOutcome}
+        </Typography>
+      </Stack>
+    </Box>
   );
 }

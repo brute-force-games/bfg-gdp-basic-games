@@ -2,6 +2,7 @@ import { FlipACoinGameState, FlipACoinHostAction } from "../../engine/flip-a-coi
 import { FlipACoinRepresentation } from "../flip-a-coin-representation";
 import { GameHostComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { convertFromDbGameTableActionToGameSpecificAction } from "../../engine/engine-utils";
+import { Box } from "@bfg-engine/ui/bfg-ui";
 
 
 export const FlipACoinHostComponent = (
@@ -12,12 +13,12 @@ export const FlipACoinHostComponent = (
   const mostRecentAction = convertFromDbGameTableActionToGameSpecificAction(latestGameAction);
 
   return (
-    <>
+    <Box>
       <FlipACoinRepresentation 
         myPlayerSeat={null} 
         gameState={gameState} 
         mostRecentAction={mostRecentAction}
       />
-    </>
+    </Box>
   )
 }

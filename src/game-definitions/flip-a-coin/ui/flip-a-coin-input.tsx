@@ -1,6 +1,6 @@
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT, FlipACoinPlayerAction, FlipACoinGameState, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
-import { Button } from "@bfg-engine/ui/bfg-ui";
+import { Button, Box, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 
 
 interface FlipACoinInputProps {
@@ -77,32 +77,99 @@ export const FlipACoinInput = (props: FlipACoinInputProps) => {
 
   if (gameState.isGameOver) {
     return (
-      <div>
-        <div>--------------------------------</div>
-      </div>
+      <Box>
+        <Typography variant="body1">Game Over</Typography>
+      </Box>
     );
   }
 
-
   return (
-    <div>
-      <div>--------------------------------</div>
-      <div>
-        <Button onClick={() => chooseCoin("penny")} disabled={chosenCoin === "penny"}>Use Penny</Button>
-        <Button onClick={() => chooseCoin("nickel")} disabled={chosenCoin === "nickel"}>Use Nickel</Button>
-        <Button onClick={() => chooseCoin("dime")} disabled={chosenCoin === "dime"}>Use Dime</Button>
-        <Button onClick={() => chooseCoin("quarter")} disabled={chosenCoin === "quarter"}>Use Quarter</Button>
-      </div>
-      <div>
-        <Button onClick={() => preferOutcome("heads")} disabled={myPlayerOutcomePreference === "heads"}>Prefer Heads</Button>
-        <Button onClick={() => preferOutcome("tails")} disabled={myPlayerOutcomePreference === "tails"}>Prefer Tails</Button>
-        <Button onClick={() => preferOutcome("no-preference")} disabled={myPlayerOutcomePreference === "no-preference"}>No Preference</Button>
-      </div>
-      <div>
-        <Button onClick={doFlipCoin}>Flip Coin</Button>
-        <Button onClick={doFinishGame} disabled={flipOutcome === undefined}>Call the Flip</Button>
-        <Button onClick={doCancelGame} disabled={flipOutcome !== undefined}>Cancel the Flip</Button>
-      </div>
-    </div>
+    <Box>
+      <Stack spacing={2}>
+        <Typography variant="h6">Choose Coin Type</Typography>
+        <Stack direction="row" spacing={1}>
+          <Button 
+            variant="outlined" 
+            onClick={() => chooseCoin("penny")} 
+            disabled={chosenCoin === "penny"}
+          >
+            Use Penny
+          </Button>
+          <Button 
+            variant="outlined" 
+            onClick={() => chooseCoin("nickel")} 
+            disabled={chosenCoin === "nickel"}
+          >
+            Use Nickel
+          </Button>
+          <Button 
+            variant="outlined" 
+            onClick={() => chooseCoin("dime")} 
+            disabled={chosenCoin === "dime"}
+          >
+            Use Dime
+          </Button>
+          <Button 
+            variant="outlined" 
+            onClick={() => chooseCoin("quarter")} 
+            disabled={chosenCoin === "quarter"}
+          >
+            Use Quarter
+          </Button>
+        </Stack>
+
+        <Typography variant="h6">Prefer Outcome</Typography>
+        <Stack direction="row" spacing={1}>
+          <Button 
+            variant="outlined" 
+            onClick={() => preferOutcome("heads")} 
+            disabled={myPlayerOutcomePreference === "heads"}
+          >
+            Prefer Heads
+          </Button>
+          <Button 
+            variant="outlined" 
+            onClick={() => preferOutcome("tails")} 
+            disabled={myPlayerOutcomePreference === "tails"}
+          >
+            Prefer Tails
+          </Button>
+          <Button 
+            variant="outlined" 
+            onClick={() => preferOutcome("no-preference")} 
+            disabled={myPlayerOutcomePreference === "no-preference"}
+          >
+            No Preference
+          </Button>
+        </Stack>
+
+        <Typography variant="h6">Game Actions</Typography>
+        <Stack direction="row" spacing={1}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={doFlipCoin}
+          >
+            Flip Coin
+          </Button>
+          <Button 
+            variant="contained" 
+            color="success" 
+            onClick={doFinishGame} 
+            disabled={flipOutcome === undefined}
+          >
+            Call the Flip
+          </Button>
+          <Button 
+            variant="contained" 
+            color="error" 
+            onClick={doCancelGame} 
+            disabled={flipOutcome !== undefined}
+          >
+            Cancel the Flip
+          </Button>
+        </Stack>
+      </Stack>
+    </Box>
   );
 }
