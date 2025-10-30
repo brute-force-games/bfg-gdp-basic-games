@@ -5,7 +5,7 @@ import { TicTacToeGameSpine } from '../tic-tac-toe-game-spine';
 import { Box, Stack } from '@bfg-engine/ui/bfg-ui';
 
 export const TicTacToeObserverComponent = (props: ObserverComponentProps<TicTacToeGameState>) => {
-  const { gameState, gameTable, playerProfiles, observedPlayerSeat } = props;
+  const { gameState, gameTable, allPlayerProfiles, observedPlayerSeat } = props;
   
   return (
     <Box>
@@ -14,7 +14,7 @@ export const TicTacToeObserverComponent = (props: ObserverComponentProps<TicTacT
           gameTable={gameTable}
           gameState={gameState}
           orientation="horizontal"
-          playerProfiles={playerProfiles}
+          allPlayerProfiles={allPlayerProfiles}
         />
         <TicTacToeGrid 
           myPlayerSeat={observedPlayerSeat || 'p1'}

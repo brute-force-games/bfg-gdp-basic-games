@@ -257,6 +257,10 @@ const getNextToActPlayers = (gameState: TicTacToeGameState): GameTableSeat[] => 
 }
 
 
+const getPlayerDetailsLine = (gameState: TicTacToeGameState, playerSeat: GameTableSeat): React.ReactNode => {
+  return getPlayerSeatSymbol(playerSeat);
+}
+
 // const flipACoinProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
 //   FlipACoinGameState,
 //   FlipACoinPlayerAction,
@@ -282,7 +286,9 @@ const ticTacToeProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
   createGameSpecificInitialState: createTicTacToeInitialGameState,
   applyPlayerAction: applyTicTacToePlayerAction,
   applyHostAction: applyTicTacToeHostAction,
+
   getNextToActPlayers: getNextToActPlayers,
+  getPlayerDetailsLine: getPlayerDetailsLine,
 };
 
 export const TicTacToeGameProcessor = ticTacToeProcessorImplementation;
