@@ -249,6 +249,14 @@ const applyTicTacToeHostAction = async (
 }
 
 
+const getNextToActPlayers = (gameState: TicTacToeGameState): GameTableSeat[] => {
+  if (gameState.nextPlayersToAct.length !== 1) {
+    throw new Error(`Invalid number of next players to act: ${gameState.nextPlayersToAct.length}`);
+  }
+  return gameState.nextPlayersToAct;
+}
+
+
 // const flipACoinProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
 //   FlipACoinGameState,
 //   FlipACoinPlayerAction,
@@ -274,6 +282,7 @@ const ticTacToeProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
   createGameSpecificInitialState: createTicTacToeInitialGameState,
   applyPlayerAction: applyTicTacToePlayerAction,
   applyHostAction: applyTicTacToeHostAction,
+  getNextToActPlayers: getNextToActPlayers,
 };
 
 export const TicTacToeGameProcessor = ticTacToeProcessorImplementation;
