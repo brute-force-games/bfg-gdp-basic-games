@@ -555,6 +555,7 @@ export const HangmanGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   HangmanHostAction
 > = {
   gameTitle: HangmanGameName,
+  
   createGameSpecificInitialAction: createInitialHangmanGameTableAction,
   createGameSpecificInitialState: createInitialGameState,
   applyPlayerAction: applyHangmanPlayerAction,

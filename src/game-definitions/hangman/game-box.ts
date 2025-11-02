@@ -1,5 +1,5 @@
 import { GameDefinition } from "@bfg-engine";
-import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
+import { BfgAllPublicKnowledgeGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
 import { 
   HangmanGameName, 
   HangmanGameState, 
@@ -30,7 +30,12 @@ export const HangmanGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
   HostComponent: HangmanHostComponent,
 };
 
-export const HangmanGameMetadata: BfgGameEngineMetadata<HangmanGameState, HangmanPlayerAction, HangmanHostAction> = {
+export const HangmanGameMetadata: BfgAllPublicKnowledgeGameEngineMetadata<
+  HangmanGameState, 
+  HangmanPlayerAction, 
+  HangmanHostAction
+> = {
+
   gameTitle: HangmanGameName,
   definition: HangmanGameDefinition,
 
