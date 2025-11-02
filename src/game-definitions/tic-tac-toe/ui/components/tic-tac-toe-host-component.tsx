@@ -20,7 +20,7 @@ export const TicTacToeHostComponent = (props: GameHostComponentProps<TicTacToeGa
         <TicTacToeGameSpine
           gameTable={gameTable}
           gameState={gameState}
-          orientation="horizontal"
+          location='top'
           allPlayerProfiles={allPlayerProfiles}
         />
         <TicTacToeGrid 

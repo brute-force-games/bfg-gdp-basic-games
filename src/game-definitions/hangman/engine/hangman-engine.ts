@@ -2,11 +2,12 @@ import { z } from "zod";
 import { getWordInfoFromInternalWordList } from "./hangman-engine-utils";
 import { BfgSupportedGameTitle, GameTableSeatSchema } from "@bfg-engine";
 import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-ids";
-import { GameTable } from "@bfg-engine/models/game-table/game-table";
+import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { GameTableActionResult } from "@bfg-engine/models/game-table/table-phase";
 import { BfgGameSpecificGameStateSchema, BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
 import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 
 export const HangmanGameName = 'Hangman' as BfgSupportedGameTitle;
 
@@ -533,6 +534,21 @@ const applyHangmanHostAction = async (
 }
 
 
+const getNextToActPlayers = (gameTable: GameTable, gameState: HangmanGameState): GameTableSeat[] => {
+  if (gameState.isGameOver) {
+    return [];
+  }
+
+  const nextPlayersToAct = getActivePlayerSeatsForGameTable(gameTable);
+
+  return nextPlayersToAct;
+}
+
+const getPlayerDetailsLine = (gameState: HangmanGameState, playerSeat: GameTableSeat): React.ReactNode => {
+  return `Player ${playerSeat} has ${gameState.playerStates?.[playerSeat]?.lettersGuessed.length} letters guessed`;
+}
+
+
 export const HangmanGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   HangmanGameState,
   HangmanPlayerAction,
@@ -543,4 +559,7 @@ export const HangmanGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   createGameSpecificInitialState: createInitialGameState,
   applyPlayerAction: applyHangmanPlayerAction,
   applyHostAction: applyHangmanHostAction,
+
+  getNextToActPlayers: getNextToActPlayers,
+  getPlayerDetailsLine: getPlayerDetailsLine,
 };

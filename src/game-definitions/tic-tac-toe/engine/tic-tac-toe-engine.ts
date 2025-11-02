@@ -249,7 +249,7 @@ const applyTicTacToeHostAction = async (
 }
 
 
-const getNextToActPlayers = (gameState: TicTacToeGameState): GameTableSeat[] => {
+const getNextToActPlayers = (_gameTable: GameTable, gameState: TicTacToeGameState): GameTableSeat[] => {
   if (gameState.nextPlayersToAct.length !== 1) {
     throw new Error(`Invalid number of next players to act: ${gameState.nextPlayersToAct.length}`);
   }
@@ -257,24 +257,10 @@ const getNextToActPlayers = (gameState: TicTacToeGameState): GameTableSeat[] => 
 }
 
 
-const getPlayerDetailsLine = (gameState: TicTacToeGameState, playerSeat: GameTableSeat): React.ReactNode => {
+const getPlayerDetailsLine = (_gameState: TicTacToeGameState, playerSeat: GameTableSeat): React.ReactNode => {
   return getPlayerSeatSymbol(playerSeat);
 }
 
-// const flipACoinProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
-//   FlipACoinGameState,
-//   FlipACoinPlayerAction,
-//   FlipACoinHostAction
-// > = {
-//   gameTitle: FlipACoinGameName,
-//   createGameSpecificInitialAction: createInitialFlipACoinHostAction,
-//   createGameSpecificInitialState: createInitialGameState,
-//   applyPlayerAction: applyFlipACoinGameAction,
-//   applyHostAction: applyFlipACoinHostAction,
-// }
-
-
-// export const FlipACoinGameProcessor = flipACoinProcessorImplementation;
 
 const ticTacToeProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
   TicTacToeGameState,
@@ -282,6 +268,7 @@ const ticTacToeProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
   TicTacToeHostAction
 > = {
   gameTitle: TicTacToeGameName,
+
   createGameSpecificInitialAction: createTicTacToeInitialGameTableAction,
   createGameSpecificInitialState: createTicTacToeInitialGameState,
   applyPlayerAction: applyTicTacToePlayerAction,
@@ -292,19 +279,6 @@ const ticTacToeProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
 };
 
 export const TicTacToeGameProcessor = ticTacToeProcessorImplementation;
-
-
-
-
-
-// export const TicTacToeGameStateProcessor = createBfgGameEngineProcessor(
-//   TicTacToeGameName,
-//   TicTacToeGameStateSchema,
-//   TicTacToeGameActionSchema,
-
-//   ticTacToeProcessorImplementation,
-//   ticTacToeRendererFactory,
-// );
 
 
 export const getCurrentPlayer = (gameState: TicTacToeGameState): GameTableSeat => {

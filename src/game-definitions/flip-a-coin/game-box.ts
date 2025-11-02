@@ -6,6 +6,7 @@ import { FlipACoinGameSpecificStateEncoder, FlipACoinHostActionEncoder, FlipACoi
 import { FlipACoinObserverComponent } from "./ui/components/flip-a-coin-observer-component";
 import { FlipACoinHostComponent } from "./ui/components/flip-a-coin-host-component";
 import { FlipACoinPlayerComponent } from "./ui/components/flip-a-coin-player-component";
+import { FlipACoinGameSpineComponent } from "./ui/components/flip-a-coin-game-spine-component";
 
 
 export const FlipACoinGameDefinition: GameDefinition = {
@@ -23,6 +24,7 @@ export const FlipACoinGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
   ObserverComponent: FlipACoinObserverComponent,
   PlayerComponent: FlipACoinPlayerComponent,
   HostComponent: FlipACoinHostComponent,
+  GameSpineComponent: FlipACoinGameSpineComponent,
 };
 
 export const FlipACoinGameMetadata: BfgGameEngineMetadata<FlipACoinGameState, FlipACoinPlayerAction, FlipACoinHostAction> = {

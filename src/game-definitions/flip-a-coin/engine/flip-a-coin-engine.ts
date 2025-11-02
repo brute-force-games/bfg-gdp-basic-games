@@ -5,11 +5,12 @@ import {
   GameTableActionResult,
   BfgSupportedGameTitle,
 } from "@bfg-engine";
-import { PLAYER_SEATS } from "@bfg-engine/models/game-table/game-table";
+import { GameTableSeat, PLAYER_SEATS } from "@bfg-engine/models/game-table/game-table";
 import { GameTable } from "@bfg-engine/models/game-table/game-table";
 import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
 import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 
 
 export const FlipACoinGameName = 'Flip a Coin' as BfgSupportedGameTitle;
@@ -347,6 +348,30 @@ const applyFlipACoinHostAction = async (
   };
 }
 
+const getNextToActPlayers = (gameTable: GameTable, gameState: FlipACoinGameState): GameTableSeat[] => {
+  if (gameState.isGameOver) {
+    return [];
+  }
+
+  const nextPlayersToAct = getActivePlayerSeatsForGameTable(gameTable);
+
+  return nextPlayersToAct;
+}
+
+const getPlayerDetailsLine = (gameState: FlipACoinGameState, playerSeat: GameTableSeat): React.ReactNode => {
+  const playerFlipResultPreference = gameState.playerFlipResultPreferences[playerSeat];
+  
+  if (!gameState.isGameOver) {
+    return `Player ${playerSeat} wants ${playerFlipResultPreference}`;
+  }
+
+  if (gameState.finalFlipResult === playerFlipResultPreference) {
+    return `Player ${playerSeat} won with ${gameState.finalFlipResult}`;
+  } 
+  
+  return `Player ${playerSeat} lost with ${gameState.finalFlipResult}`;
+}
+
 
 const flipACoinProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
   FlipACoinGameState,
@@ -354,10 +379,14 @@ const flipACoinProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
   FlipACoinHostAction
 > = {
   gameTitle: FlipACoinGameName,
+
   createGameSpecificInitialAction: createInitialFlipACoinHostAction,
   createGameSpecificInitialState: createInitialGameState,
   applyPlayerAction: applyFlipACoinGameAction,
   applyHostAction: applyFlipACoinHostAction,
+
+  getNextToActPlayers: getNextToActPlayers,
+  getPlayerDetailsLine: getPlayerDetailsLine,
 }
 
 

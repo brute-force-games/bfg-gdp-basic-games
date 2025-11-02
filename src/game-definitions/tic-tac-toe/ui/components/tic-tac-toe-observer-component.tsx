@@ -13,7 +13,7 @@ export const TicTacToeObserverComponent = (props: ObserverComponentProps<TicTacT
         <TicTacToeGameSpine
           gameTable={gameTable}
           gameState={gameState}
-          orientation="horizontal"
+          location="top"
           allPlayerProfiles={allPlayerProfiles}
         />
         <TicTacToeGrid 
