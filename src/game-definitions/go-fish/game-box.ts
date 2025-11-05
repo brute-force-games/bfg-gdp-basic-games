@@ -1,21 +1,22 @@
 import { GameDefinition } from "@bfg-engine";
-import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
+import { BfgGameEngineMetadata, PrivatePlayerKnowledgeBfgGameEngineMetadata, TBfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
 import { 
   GoFishGameName, 
-  GoFishGameState, 
-  GoFishPlayerAction,
-  GoFishHostAction,
   GoFishGameProcessor
 } from "./engine/go-fish-engine";
-import { BfgAllPublicKnowledgeGameEngineComponents, BfgPrivatePlayerKnowledgeImpl } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+import { BfgGameEngineComponents } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { 
-  GoFishGameSpecificStateEncoder, 
+  GoFishHostGameStateEncoder, 
   GoFishPlayerActionEncoder, 
-  GoFishHostActionEncoder 
+  GoFishHostActionEncoder, 
+  GoFishPublicGameStateEncoder,
+  GoFishPrivatePlayerKnowledgeEncoder
 } from "./engine/encoders";
 import { GoFishPlayerComponent } from "./ui/components/go-fish-player-component";
 import { GoFishObserverComponent } from "./ui/components/go-fish-observer-component";
 import { GoFishHostComponent } from "./ui/components/go-fish-host-component";
+import { GoFishPlayerAction, GoFishHostAction, GoFishPlayerHandState, GoFishHostGameState, GoFishPublicGameState } from "./go-fish-types";
+
 
 export const GoFishGameDefinition: GameDefinition = {
   title: GoFishGameName,
@@ -23,30 +24,43 @@ export const GoFishGameDefinition: GameDefinition = {
   maxNumPlayersForGame: 6
 };
 
-export const GoFishGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
-  GoFishGameState,
+export const GoFishGameComponents: BfgGameEngineComponents<
+  GoFishHostGameState,
   GoFishPlayerAction,
-  GoFishHostAction
+  GoFishHostAction,
+  GoFishPlayerHandState
 > = {
   ObserverComponent: GoFishObserverComponent,
   PlayerComponent: GoFishPlayerComponent,
   HostComponent: GoFishHostComponent,
 };
 
-export const GoFishGameMetadata: BfgGameEngineMetadata<
-  GoFishGameState,
+
+export const GoFishGameMetadata: TBfgGameEngineMetadata<
+  'private-player-knowledge',
+  GoFishHostGameState,
+  GoFishPublicGameState,
   GoFishPlayerAction,
   GoFishHostAction,
-  BfgPrivatePlayerKnowledgeImpl
+  GoFishPlayerHandState
 > = {
   gameTitle: GoFishGameName,
   definition: GoFishGameDefinition,
 
-  gameSpecificStateEncoder: GoFishGameSpecificStateEncoder,
-  playerActionEncoder: GoFishPlayerActionEncoder,
-  hostActionEncoder: GoFishHostActionEncoder,
+  gameKnowledgeType: 'private-player-knowledge',
+  encoders: {
+    hostGameStateEncoder: GoFishHostGameStateEncoder,
+    publicGameStateEncoder: GoFishPublicGameStateEncoder,
+    privatePlayerKnowledgeEncoder: GoFishPrivatePlayerKnowledgeEncoder,
+    playerActionEncoder: GoFishPlayerActionEncoder,
+    hostActionEncoder: GoFishHostActionEncoder,
+  },
+  // hostGameStateEncoder: GoFishHostGameStateEncoder,
+  // publicGameStateEncoder: GoFishPublicGameStateEncoder,
+  // privatePlayerKnowledgeEncoder: GoFishPrivatePlayerKnowledgeEncoder,
+  // playerActionEncoder: GoFishPlayerActionEncoder,
+  // hostActionEncoder: GoFishHostActionEncoder,
 
   engine: GoFishGameProcessor,
   components: GoFishGameComponents,
 };
-

@@ -1,39 +1,43 @@
 import { useState } from 'react';
-import { GoFishGameState, GoFishPlayerAction, GO_FISH_PLAYER_ACTION_ASK_FOR_CARDS } from "../engine/go-fish-engine";
 import { CardRank } from "../engine/engine-utils";
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { Box, Typography, Button, Stack } from "@bfg-engine/ui/bfg-ui";
+import { GoFishPlayerAction, GO_FISH_PLAYER_ACTION_ASK_FOR_CARDS, GoFishPublicGameState, GoFishPlayerHandState } from '../go-fish-types';
+
 
 interface GoFishInputProps {
   myPlayerSeat: GameTableSeat;
-  gameState: GoFishGameState;
-  onGameAction: (gameState: GoFishGameState, action: GoFishPlayerAction) => void;
+  gameState: GoFishPublicGameState;
+  myPlayerState: GoFishPlayerHandState | null;
+  onGameAction: (gameState: GoFishPublicGameState, action: GoFishPlayerAction) => void;
 }
 
 export const GoFishInput = (props: GoFishInputProps) => {
-  const { myPlayerSeat, gameState, onGameAction } = props;
+  const { myPlayerSeat, gameState, myPlayerState, onGameAction } = props;
   const [selectedRank, setSelectedRank] = useState<CardRank | null>(null);
   const [selectedTargetPlayer, setSelectedTargetPlayer] = useState<GameTableSeat | null>(null);
 
   const isMyTurn = gameState.currentPlayerSeat === myPlayerSeat;
-  const myPlayerState = gameState.playerStates[myPlayerSeat];
+  const myPlayerBoardState = gameState.playerBoardStates[myPlayerSeat];
+  const myPlayerHandState = myPlayerState;
 
-  if (!myPlayerState) {
+  if (!myPlayerBoardState) {
     return (
-      <Box sx={{ padding: '16px' }}>
+      <Box style={{ padding: '16px' }}>
         <Typography>You are not in this game</Typography>
       </Box>
     );
   }
 
   if (gameState.isGameOver) {
+    const winnerListString = gameState.winningSeats.map(seat => seat.toString()).join(', ');
     return (
-      <Box sx={{ padding: '16px' }}>
-        <Typography variant="h6" sx={{ color: '#e74c3c' }}>
+      <Box style={{ padding: '16px' }}>
+        <Typography variant="h6" style={{ color: '#e74c3c' }}>
           Game Over!
         </Typography>
         <Typography>
-          Winner: <strong>{gameState.winningSeat}</strong>
+          Winners: <strong>{winnerListString}</strong>
         </Typography>
       </Box>
     );
@@ -41,7 +45,7 @@ export const GoFishInput = (props: GoFishInputProps) => {
 
   if (!isMyTurn) {
     return (
-      <Box sx={{ padding: '16px' }}>
+      <Box style={{ padding: '16px' }}>
         <Typography variant="body1" color="secondary">
           Waiting for {gameState.currentPlayerSeat}'s turn...
         </Typography>
@@ -50,10 +54,11 @@ export const GoFishInput = (props: GoFishInputProps) => {
   }
 
   // Get unique ranks in player's hand
-  const ranksInHand = Array.from(new Set(myPlayerState.hand.map(card => card.rank)));
+  console.log('🎮 myPlayerHandState:', myPlayerHandState);
+  const ranksInHand = Array.from(new Set(myPlayerHandState?.hand.map(card => card.rank) ?? []));
   
   // Get other players
-  const otherPlayers = Object.keys(gameState.playerStates)
+  const otherPlayers = Object.keys(gameState.playerBoardStates)
     .filter(seat => seat !== myPlayerSeat) as GameTableSeat[];
 
   const handleAskForCards = () => {
@@ -77,24 +82,24 @@ export const GoFishInput = (props: GoFishInputProps) => {
   };
 
   return (
-    <Box sx={{ padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+      <Box style={{ padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
       <Stack spacing={3}>
-        <Typography variant="h6" sx={{ color: '#2c3e50' }}>
+        <Typography variant="h6" style={{ color: '#2c3e50' }}>
           Your Turn - Ask for Cards
         </Typography>
 
         {/* Select rank */}
         <Box>
-          <Typography variant="body2" fontWeight="bold" sx={{ marginBottom: '8px' }}>
+          <Typography variant="body2" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
             1. Select a rank from your hand:
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {ranksInHand.map(rank => (
               <Button
                 key={rank}
                 variant={selectedRank === rank ? 'contained' : 'outlined'}
                 onClick={() => setSelectedRank(rank)}
-                sx={{
+                style={{
                   minWidth: '60px',
                   padding: '12px',
                   fontSize: '18px',
@@ -109,25 +114,25 @@ export const GoFishInput = (props: GoFishInputProps) => {
 
         {/* Select target player */}
         <Box>
-          <Typography variant="body2" fontWeight="bold" sx={{ marginBottom: '8px' }}>
+          <Typography variant="body2" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
             2. Select a player to ask:
           </Typography>
           <Stack spacing={1}>
             {otherPlayers.map(seat => {
-              const playerState = gameState.playerStates[seat];
+              const playerState = gameState.playerBoardStates[seat];
               return (
                 <Button
                   key={seat}
                   variant={selectedTargetPlayer === seat ? 'contained' : 'outlined'}
                   onClick={() => setSelectedTargetPlayer(seat)}
-                  sx={{
+                  style={{
                     justifyContent: 'space-between',
                     textTransform: 'none',
                   }}
                 >
                   <span>{seat}</span>
                   <span style={{ fontSize: '12px', opacity: 0.7 }}>
-                    ({playerState.hand.length} cards, {playerState.score} sets)
+                    ({myPlayerHandState?.hand.length ?? 0} cards, {myPlayerBoardState.score} sets)
                   </span>
                 </Button>
               );
@@ -143,7 +148,7 @@ export const GoFishInput = (props: GoFishInputProps) => {
             onClick={handleAskForCards}
             disabled={!selectedRank || !selectedTargetPlayer}
             fullWidth
-            sx={{
+            style={{
               padding: '14px',
               fontSize: '16px',
               fontWeight: 'bold',
@@ -156,23 +161,23 @@ export const GoFishInput = (props: GoFishInputProps) => {
         </Box>
 
         {/* Help text */}
-        <Box sx={{ marginTop: '16px', padding: '12px', backgroundColor: '#e8f4f8', borderRadius: '4px' }}>
-          <Typography variant="caption" sx={{ display: 'block', marginBottom: '4px' }}>
+        <Box style={{ marginTop: '16px', padding: '12px', backgroundColor: '#e8f4f8', borderRadius: '4px' }}>
+          <Typography variant="caption" style={{ display: 'block', marginBottom: '4px' }}>
             <strong>How to play:</strong>
           </Typography>
-          <Typography variant="caption" sx={{ display: 'block' }}>
+          <Typography variant="caption" style={{ display: 'block' }}>
             • Ask another player for cards of a rank you have in your hand
           </Typography>
-          <Typography variant="caption" sx={{ display: 'block' }}>
+          <Typography variant="caption" style={{ display: 'block' }}>
             • If they have it, you get all their cards of that rank and go again
           </Typography>
-          <Typography variant="caption" sx={{ display: 'block' }}>
+          <Typography variant="caption" style={{ display: 'block' }}>
             • If they don't have it, you draw from the deck (Go Fish!)
           </Typography>
-          <Typography variant="caption" sx={{ display: 'block' }}>
+          <Typography variant="caption" style={{ display: 'block' }}>
             • Collect 4 cards of the same rank to complete a set
           </Typography>
-          <Typography variant="caption" sx={{ display: 'block' }}>
+          <Typography variant="caption" style={{ display: 'block' }}>
             • Player with the most sets when the deck runs out wins!
           </Typography>
         </Box>
@@ -180,4 +185,3 @@ export const GoFishInput = (props: GoFishInputProps) => {
     </Box>
   );
 };
-

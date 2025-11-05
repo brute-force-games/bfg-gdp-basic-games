@@ -1,5 +1,5 @@
 import { GameDefinition } from "@bfg-engine";
-import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
+import { BfgAllPublicKnowledgeGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
 import { FlipACoinPlayerAction, FlipACoinGameState, FlipACoinGameProcessor, FlipACoinHostAction, FlipACoinGameName } from "./engine/flip-a-coin-engine";
 import { BfgAllPublicKnowledgeGameEngineComponents } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { FlipACoinGameSpecificStateEncoder, FlipACoinHostActionEncoder, FlipACoinPlayerActionEncoder } from "./engine/encoders";
@@ -27,13 +27,23 @@ export const FlipACoinGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
   GameSpineComponent: FlipACoinGameSpineComponent,
 };
 
-export const FlipACoinGameMetadata: BfgGameEngineMetadata<FlipACoinGameState, FlipACoinPlayerAction, FlipACoinHostAction> = {
+export const FlipACoinGameMetadata: BfgAllPublicKnowledgeGameEngineMetadata<FlipACoinGameState, FlipACoinPlayerAction, FlipACoinHostAction> = {
   gameTitle: FlipACoinGameName,
   definition: FlipACoinGameDefinition,
+  gameKnowledgeType: 'public-knowledge',
 
-  gameSpecificStateEncoder: FlipACoinGameSpecificStateEncoder,
-  playerActionEncoder: FlipACoinPlayerActionEncoder,
-  hostActionEncoder: FlipACoinHostActionEncoder,
+  // hostGameStateEncoder: FlipACoinGameSpecificStateEncoder, // Never used for public knowledge games
+  // // publicGameStateEncoder: FlipACoinGameSpecificStateEncoder,
+  // playerActionEncoder: FlipACoinPlayerActionEncoder,
+  // hostActionEncoder: FlipACoinHostActionEncoder,
+  // privatePlayerKnowledgeEncoder: null,
+
+  encoders: {
+    publicGameStateEncoder: FlipACoinGameSpecificStateEncoder,
+    hostGameStateEncoder: FlipACoinGameSpecificStateEncoder,
+    playerActionEncoder: FlipACoinPlayerActionEncoder,
+    hostActionEncoder: FlipACoinHostActionEncoder,
+  },
 
   engine: FlipACoinGameProcessor,
   components: FlipACoinGameComponents,

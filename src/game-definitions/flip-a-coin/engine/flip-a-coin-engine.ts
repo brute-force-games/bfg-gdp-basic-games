@@ -9,7 +9,7 @@ import { GameTableSeat, PLAYER_SEATS } from "@bfg-engine/models/game-table/game-
 import { GameTable } from "@bfg-engine/models/game-table/game-table";
 import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
-import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+import { IBfgGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 
 
@@ -156,20 +156,6 @@ const createInitialFlipACoinHostAction = (
     },
   };
 }
-
-// const createInitialFlipACoinGameTableAction = (
-//   // _gameTable: NewGameTable,
-// ): BfgGameSpecificTableAction<FlipACoinGameAction> => {
-//   return {
-//     actionType: 'game-table-action-host-starts-game',
-//     gameSpecificAction: {
-//       hostActionType: FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME,
-//     },
-//     gameTableActionId: BfgGameTableActionId.createId(),
-//     source: 'game-table-action-source-host',
-//   };
-// }
-
 
 const createInitialGameState = (
   _gameTable: GameTable,
@@ -373,10 +359,11 @@ const getPlayerDetailsLine = (gameState: FlipACoinGameState, playerSeat: GameTab
 }
 
 
-const flipACoinProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
+const flipACoinProcessorImplementation: IBfgGameProcessor<
   FlipACoinGameState,
   FlipACoinPlayerAction,
-  FlipACoinHostAction
+  FlipACoinHostAction,
+  never
 > = {
   gameTitle: FlipACoinGameName,
 
@@ -387,6 +374,7 @@ const flipACoinProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
 
   getNextToActPlayers: getNextToActPlayers,
   getPlayerDetailsLine: getPlayerDetailsLine,
+  getAllPlayersPrivateKnowledge: () => null,
 }
 
 

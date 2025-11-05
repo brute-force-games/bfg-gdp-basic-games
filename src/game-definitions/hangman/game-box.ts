@@ -8,7 +8,7 @@ import {
   HangmanGameProcessor
 } from "./engine/hangman-engine";
 import { BfgAllPublicKnowledgeGameEngineComponents } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { HangmanGameSpecificStateEncoder, HangmanPlayerActionEncoder, HangmanHostActionEncoder } from "./engine/encoders";
+import { HangmanPublicGameStateEncoder, HangmanPlayerActionEncoder, HangmanHostActionEncoder } from "./engine/encoders";
 import { HangmanPlayerComponent } from "./ui/components/hangman-player-component";
 import { HangmanObserverComponent } from "./ui/components/hangman-observer-component";
 import { HangmanHostComponent } from "./ui/components/hangman-host-component";
@@ -38,10 +38,19 @@ export const HangmanGameMetadata: BfgAllPublicKnowledgeGameEngineMetadata<
 
   gameTitle: HangmanGameName,
   definition: HangmanGameDefinition,
+  gameKnowledgeType: 'public-knowledge',
 
-  gameSpecificStateEncoder: HangmanGameSpecificStateEncoder,
-  playerActionEncoder: HangmanPlayerActionEncoder,
-  hostActionEncoder: HangmanHostActionEncoder,
+  // hostGameStateEncoder: HangmanHostGameStateEncoder,
+  // publicGameStateEncoder: HangmanPublicGameStateEncoder,
+  // playerActionEncoder: HangmanPlayerActionEncoder,
+  // hostActionEncoder: HangmanHostActionEncoder,
+
+  encoders: {
+    hostGameStateEncoder: HangmanPublicGameStateEncoder,
+    publicGameStateEncoder: HangmanPublicGameStateEncoder,
+    playerActionEncoder: HangmanPlayerActionEncoder,
+    hostActionEncoder: HangmanHostActionEncoder,
+  },
 
   engine: HangmanGameProcessor,
   components: HangmanGameComponents,

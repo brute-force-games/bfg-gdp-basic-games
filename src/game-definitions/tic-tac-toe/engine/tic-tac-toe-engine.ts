@@ -6,7 +6,8 @@ import { GameTableActionResult } from "@bfg-engine/models/game-table/table-phase
 import { BfgGameSpecificGameStateSchema, BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
 import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
-import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+import { IBfgGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+// import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
 
 
 export const TicTacToeGameName = 'Tic Tac Toe' as BfgSupportedGameTitle;
@@ -262,10 +263,11 @@ const getPlayerDetailsLine = (_gameState: TicTacToeGameState, playerSeat: GameTa
 }
 
 
-const ticTacToeProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
+const ticTacToeProcessorImplementation: IBfgGameProcessor<
   TicTacToeGameState,
   TicTacToePlayerAction,
-  TicTacToeHostAction
+  TicTacToeHostAction,
+  never
 > = {
   gameTitle: TicTacToeGameName,
 
@@ -276,6 +278,7 @@ const ticTacToeProcessorImplementation: IBfgAllPublicKnowledgeGameProcessor<
 
   getNextToActPlayers: getNextToActPlayers,
   getPlayerDetailsLine: getPlayerDetailsLine,
+  getAllPlayersPrivateKnowledge: () => null,
 };
 
 export const TicTacToeGameProcessor = ticTacToeProcessorImplementation;

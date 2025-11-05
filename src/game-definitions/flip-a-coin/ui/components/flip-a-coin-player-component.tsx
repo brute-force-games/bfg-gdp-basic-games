@@ -7,7 +7,7 @@ import { Box, Stack } from "@bfg-engine/ui/bfg-ui";
 
 
 export const FlipACoinPlayerComponent = (
-  props: PlayerComponentProps<FlipACoinGameState, FlipACoinPlayerAction>
+  props: PlayerComponentProps<FlipACoinGameState, FlipACoinPlayerAction, never>
 ) => {
   const { currentPlayerSeat, gameState, latestGameAction, onPlayerAction } = props;
 

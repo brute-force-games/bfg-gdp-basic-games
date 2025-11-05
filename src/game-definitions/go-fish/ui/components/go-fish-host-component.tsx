@@ -1,35 +1,51 @@
-import { GoFishGameState, GoFishHostAction, getCurrentPlayer } from '../../engine/go-fish-engine';
+import { GoFishGameProcessor } from '../../engine/go-fish-engine';
 import { GameHostComponentProps } from '@bfg-engine/models/game-engine/bfg-game-engine-types';
-import { GoFishRepresentation } from '../go-fish-representation';
 import { Box, Stack, Typography } from '@bfg-engine/ui/bfg-ui';
+import { GoFishHostAction, GoFishHostGameState } from '../../go-fish-types';
 
-export const GoFishHostComponent = (props: GameHostComponentProps<GoFishGameState, GoFishHostAction>) => {
-  const { gameState } = props;
-  const currentPlayerSeat = getCurrentPlayer(gameState);
+
+export const GoFishHostComponent = (props: GameHostComponentProps<GoFishHostGameState, GoFishHostAction>) => {
+  const { gameTable, gameState } = props;
+  // const currentPlayerSeat = getCurrentPlayer(gameState);
+
+  const processor = GoFishGameProcessor;
+
+  const allPlayerStates = processor.getAllPlayersPrivateKnowledge(gameTable, gameState);
+  if (!allPlayerStates) {
+    return (
+      <Box>
+        <Typography variant="body2" style={{ fontWeight: 'bold' }}>
+          No player states found
+        </Typography>
+      </Box>
+    );
+  }
+
   
   return (
     <Box>
       <Stack spacing={3}>
-        <Box sx={{ padding: '12px', backgroundColor: '#fff3cd', borderRadius: '8px', border: '1px solid #ffc107' }}>
-          <Typography variant="body2" fontWeight="bold">
+        <Box style={{ padding: '12px', backgroundColor: '#fff3cd', borderRadius: '8px', border: '1px solid #ffc107' }}>
+          <Typography variant="body2" style={{ fontWeight: 'bold' }}>
             Host View - You can see all game state
           </Typography>
         </Box>
-        <GoFishRepresentation 
+        {/* <GoFishRepresentation 
           myPlayerSeat={currentPlayerSeat}
           gameState={gameState}
-        />
+          myHandState={myHandState}
+        /> */}
         
         {/* Host admin info */}
-        <Box sx={{ padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-          <Typography variant="subtitle2" fontWeight="bold" sx={{ marginBottom: '12px' }}>
+        <Box style={{ padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+          <Typography variant="subtitle2" style={{ fontWeight: 'bold', marginBottom: '12px' }}>
             Game Administration
           </Typography>
           <Stack spacing={1}>
             <Typography variant="caption">
               Deck: {gameState.deck.length} cards remaining
             </Typography>
-            {Object.entries(gameState.playerStates).map(([seat, playerState]) => (
+            {Object.entries(allPlayerStates).map(([seat, playerState]) => (
               <Typography key={seat} variant="caption">
                 {seat}: {playerState.hand.length} cards, {playerState.score} sets, 
                 Completed: [{playerState.completedSets.join(', ')}]
@@ -41,4 +57,3 @@ export const GoFishHostComponent = (props: GameHostComponentProps<GoFishGameStat
     </Box>
   );
 };
-

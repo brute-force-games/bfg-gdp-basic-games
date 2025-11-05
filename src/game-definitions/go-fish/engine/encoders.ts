@@ -1,11 +1,9 @@
 import { createJsonZodObjectDataEncoder } from "@bfg-engine/models/game-engine/encoders";
-import { 
-  GoFishGameStateSchema, 
-  GoFishHostActionSchema, 
-  GoFishPlayerActionSchema 
-} from "./go-fish-engine";
+import { GoFishPlayerActionSchema, GoFishHostActionSchema, GoFishHostGameStateSchema, GoFishPublicGameStateSchema, GoFishPlayerHandStateSchema } from "../go-fish-types";
 
-export const GoFishGameSpecificStateEncoder = createJsonZodObjectDataEncoder(GoFishGameStateSchema);
+
+export const GoFishHostGameStateEncoder = createJsonZodObjectDataEncoder(GoFishHostGameStateSchema);
+export const GoFishPublicGameStateEncoder = createJsonZodObjectDataEncoder(GoFishPublicGameStateSchema);
+export const GoFishPrivatePlayerKnowledgeEncoder = createJsonZodObjectDataEncoder(GoFishPlayerHandStateSchema);
 export const GoFishPlayerActionEncoder = createJsonZodObjectDataEncoder(GoFishPlayerActionSchema);
 export const GoFishHostActionEncoder = createJsonZodObjectDataEncoder(GoFishHostActionSchema);
-

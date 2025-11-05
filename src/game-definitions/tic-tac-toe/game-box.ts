@@ -1,5 +1,5 @@
 import { GameDefinition } from "@bfg-engine";
-import { BfgGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
+import { BfgAllPublicKnowledgeGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
 import { 
   TicTacToeGameName, 
   TicTacToeGameState, 
@@ -30,13 +30,25 @@ export const TicTacToeGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
   HostComponent: TicTacToeHostComponent,
 };
 
-export const TicTacToeGameMetadata: BfgGameEngineMetadata<TicTacToeGameState, TicTacToePlayerAction, TicTacToeHostAction> = {
+export const TicTacToeGameMetadata: BfgAllPublicKnowledgeGameEngineMetadata<
+  TicTacToeGameState,
+  TicTacToePlayerAction,
+  TicTacToeHostAction
+> = {
   gameTitle: TicTacToeGameName,
   definition: TicTacToeGameDefinition,
+  gameKnowledgeType: 'public-knowledge',
 
-  gameSpecificStateEncoder: TicTacToeGameSpecificStateEncoder,
-  playerActionEncoder: TicTacToePlayerActionEncoder,
-  hostActionEncoder: TicTacToeHostActionEncoder,
+  encoders: {
+    hostGameStateEncoder: TicTacToeGameSpecificStateEncoder,
+    publicGameStateEncoder: TicTacToeGameSpecificStateEncoder,
+    playerActionEncoder: TicTacToePlayerActionEncoder,
+    hostActionEncoder: TicTacToeHostActionEncoder,
+  },
+
+  // gameSpecificStateEncoder: TicTacToeGameSpecificStateEncoder,
+  // playerActionEncoder: TicTacToePlayerActionEncoder,
+  // hostActionEncoder: TicTacToeHostActionEncoder,
 
   engine: TicTacToeGameProcessor,
   components: TicTacToeGameComponents,

@@ -6,8 +6,8 @@ import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-tab
 import { GameTableActionResult } from "@bfg-engine/models/game-table/table-phase";
 import { BfgGameSpecificGameStateSchema, BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
 import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
+import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
 
 export const HangmanGameName = 'Hangman' as BfgSupportedGameTitle;
 
@@ -563,4 +563,6 @@ export const HangmanGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
 
   getNextToActPlayers: getNextToActPlayers,
   getPlayerDetailsLine: getPlayerDetailsLine,
+
+  getAllPlayersPrivateKnowledge: () => null,
 };
