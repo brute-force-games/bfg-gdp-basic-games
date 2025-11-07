@@ -1,12 +1,11 @@
 import { TicTacToeGameState, TicTacToeHostAction, getCurrentPlayer } from '../../engine/tic-tac-toe-engine';
 import { GameHostComponentProps } from '@bfg-engine/models/game-engine/bfg-game-engine-types';
 import { TicTacToeGrid } from '../tic-tac-toe-grid';
-import { TicTacToeGameSpine } from '../tic-tac-toe-game-spine';
 import { Box, Stack } from '@bfg-engine/ui/bfg-ui';
 
 
 export const TicTacToeHostComponent = (props: GameHostComponentProps<TicTacToeGameState, TicTacToeHostAction>) => {
-  const { gameState, gameTable, allPlayerProfiles, onHostAction } = props;
+  const { gameState, gameTable, onHostAction } = props;
   const currentPlayerSeat = getCurrentPlayer(gameState);
   
   // Create player profiles map from gameTable
@@ -17,12 +16,6 @@ export const TicTacToeHostComponent = (props: GameHostComponentProps<TicTacToeGa
   return (
     <Box>
       <Stack spacing={3}>
-        <TicTacToeGameSpine
-          gameTable={gameTable}
-          gameState={gameState}
-          location='top'
-          allPlayerProfiles={allPlayerProfiles}
-        />
         <TicTacToeGrid 
           myPlayerSeat={currentPlayerSeat}
           gameState={gameState}
