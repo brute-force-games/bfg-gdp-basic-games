@@ -2,21 +2,20 @@ import { TicTacToeGameState, TicTacToePlayerAction } from '../../engine/tic-tac-
 import { PlayerComponentProps } from '@bfg-engine/models/game-engine/bfg-game-engine-types';
 import { TicTacToeGrid } from '../tic-tac-toe-grid';
 import { Box, Stack } from '@bfg-engine/ui/bfg-ui';
-import { TicTacToeGameSpine } from '../tic-tac-toe-game-spine';
 
 
-export const TicTacToePlayerComponent = (props: PlayerComponentProps<TicTacToeGameState, TicTacToePlayerAction>) => {
-  const { gameState, gameTable, allPlayerProfiles, currentPlayerSeat, onPlayerAction } = props;
+export const TicTacToePlayerComponent = (props: PlayerComponentProps<TicTacToeGameState, TicTacToePlayerAction, never>) => {
+  const { gameState, currentPlayerSeat, onPlayerAction } = props;
   
   return (
     <Box>
       <Stack spacing={3}>
-        <TicTacToeGameSpine 
+        {/* <TicTacToeGameSpine 
           gameTable={gameTable}
           gameState={gameState}
           location="top"
           allPlayerProfiles={allPlayerProfiles}
-        />
+        /> */}
         <TicTacToeGrid 
           myPlayerSeat={currentPlayerSeat}
           gameState={gameState}

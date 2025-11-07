@@ -1,17 +1,20 @@
 import { GameDefinition } from "@bfg-engine";
-import { BfgAllPublicKnowledgeGameEngineMetadata } from "@bfg-engine/models/bfg-game-engines";
 import { 
   TicTacToeGameName, 
   TicTacToeGameState, 
   TicTacToePlayerAction,
   TicTacToeHostAction,
-  TicTacToeGameProcessor
+  TicTacToeGameProcessor,
+  TicTacToeGameStateSchema,
+  TicTacToeHostActionSchema,
+  TicTacToePlayerActionSchema
 } from "./engine/tic-tac-toe-engine";
-import { BfgAllPublicKnowledgeGameEngineComponents } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { TicTacToeGameSpecificStateEncoder, TicTacToePlayerActionEncoder, TicTacToeHostActionEncoder } from "./engine/encoders";
+import { BfgAllPublicKnowledgeGameEngineComponents, BfgPrivatePlayerKnowledgeImplStateSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { TicTacToePlayerComponent } from "./ui/components/tic-tac-toe-player-component";
 import { TicTacToeObserverComponent } from "./ui/components/tic-tac-toe-observer-component";
 import { TicTacToeHostComponent } from "./ui/components/tic-tac-toe-host-component";
+import { createPublicKnowledgeGameMetadata } from "@bfg-engine/game-metadata/metadata-factory";
+import { BfgGameEngineSchemas } from "@bfg-engine/models/game-engine/bfg-game-engine-schemas";
 
 
 export const TicTacToeGameDefinition: GameDefinition = {
@@ -30,26 +33,44 @@ export const TicTacToeGameComponents: BfgAllPublicKnowledgeGameEngineComponents<
   HostComponent: TicTacToeHostComponent,
 };
 
-export const TicTacToeGameMetadata: BfgAllPublicKnowledgeGameEngineMetadata<
-  TicTacToeGameState,
-  TicTacToePlayerAction,
-  TicTacToeHostAction
-> = {
-  gameTitle: TicTacToeGameName,
-  definition: TicTacToeGameDefinition,
-  gameKnowledgeType: 'public-knowledge',
+// export const TicTacToeGameMetadata: BfgAllPublicKnowledgeGameEngineMetadata<
+//   TicTacToeGameState,
+//   TicTacToePlayerAction,
+//   TicTacToeHostAction
+// > = {
+//   gameTitle: TicTacToeGameName,
+//   definition: TicTacToeGameDefinition,
+//   gameKnowledgeType: 'public-knowledge',
 
-  encoders: {
-    hostGameStateEncoder: TicTacToeGameSpecificStateEncoder,
-    publicGameStateEncoder: TicTacToeGameSpecificStateEncoder,
-    playerActionEncoder: TicTacToePlayerActionEncoder,
-    hostActionEncoder: TicTacToeHostActionEncoder,
-  },
+//   encoders: {
+//     hostGameStateEncoder: TicTacToeGameSpecificStateEncoder,
+//     publicGameStateEncoder: TicTacToeGameSpecificStateEncoder,
+//     playerActionEncoder: TicTacToePlayerActionEncoder,
+//     hostActionEncoder: TicTacToeHostActionEncoder,
+//   },
 
-  // gameSpecificStateEncoder: TicTacToeGameSpecificStateEncoder,
-  // playerActionEncoder: TicTacToePlayerActionEncoder,
-  // hostActionEncoder: TicTacToeHostActionEncoder,
+//   // gameSpecificStateEncoder: TicTacToeGameSpecificStateEncoder,
+//   // playerActionEncoder: TicTacToePlayerActionEncoder,
+//   // hostActionEncoder: TicTacToeHostActionEncoder,
 
-  engine: TicTacToeGameProcessor,
-  components: TicTacToeGameComponents,
+//   engine: TicTacToeGameProcessor,
+//   components: TicTacToeGameComponents,
+// };
+
+
+const TicTacToeGameSchemas: BfgGameEngineSchemas = {
+  hostGameStateSchema: TicTacToeGameStateSchema,
+  publicGameStateSchema: TicTacToeGameStateSchema,
+  playerActionSchema: TicTacToePlayerActionSchema,
+  hostActionSchema: TicTacToeHostActionSchema,
+  privatePlayerKnowledgeSchema: BfgPrivatePlayerKnowledgeImplStateSchema,
 };
+
+
+export const TicTacToeGameMetadata = createPublicKnowledgeGameMetadata(
+  TicTacToeGameName,
+  TicTacToeGameDefinition,
+  TicTacToeGameSchemas,
+  TicTacToeGameProcessor,
+  TicTacToeGameComponents
+);

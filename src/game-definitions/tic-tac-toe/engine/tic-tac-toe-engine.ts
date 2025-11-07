@@ -7,7 +7,6 @@ import { BfgGameSpecificGameStateSchema, BfgGameSpecificTableAction } from "@bfg
 import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
 import { IBfgGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
-// import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
 
 
 export const TicTacToeGameName = 'Tic Tac Toe' as BfgSupportedGameTitle;
@@ -46,8 +45,6 @@ export const TicTacToeMoveSchema = BfgGameImplPlayerActionSchema.extend({
 })
 
 export type TicTacToeMove = z.infer<typeof TicTacToeMoveSchema>;
-
-
 
 
 
@@ -220,7 +217,6 @@ const applyTicTacToePlayerAction = async (
   if (!newBoard.includes('-')) {
     newGameState.resolution = 'game-over-draw';
     return {
-      // ...tableState,
       tablePhase: 'table-phase-game-complete-with-draw',
       gameSpecificState: newGameState,
       gameSpecificStateSummary: 'Game is a draw',
