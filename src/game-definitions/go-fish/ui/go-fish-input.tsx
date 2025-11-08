@@ -119,7 +119,7 @@ export const GoFishInput = (props: GoFishInputProps) => {
           </Typography>
           <Stack spacing={1}>
             {otherPlayers.map(seat => {
-              const playerState = gameState.playerBoardStates[seat];
+              const playerBoardState = gameState.playerBoardStates[seat];
               return (
                 <Button
                   key={seat}
@@ -132,7 +132,7 @@ export const GoFishInput = (props: GoFishInputProps) => {
                 >
                   <span>{seat}</span>
                   <span style={{ fontSize: '12px', opacity: 0.7 }}>
-                    ({myPlayerHandState?.hand.length ?? 0} cards, {myPlayerBoardState.score} sets)
+                    ({playerBoardState?.handSize ?? 0} cards, {playerBoardState?.score ?? 0} sets)
                   </span>
                 </Button>
               );

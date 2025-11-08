@@ -45,12 +45,15 @@ export const GoFishHostComponent = (props: GameHostComponentProps<GoFishHostGame
             <Typography variant="caption">
               Deck: {gameState.deck.length} cards remaining
             </Typography>
-            {Object.entries(allPlayerStates).map(([seat, playerState]) => (
-              <Typography key={seat} variant="caption">
-                {seat}: {playerState.hand.length} cards, {playerState.score} sets, 
-                Completed: [{playerState.completedSets.join(', ')}]
-              </Typography>
-            ))}
+            {Object.entries(allPlayerStates).map(([seat, playerHandState]) => {
+              const playerBoardState = gameState.playerBoardStates[seat as keyof typeof gameState.playerBoardStates];
+              return (
+                <Typography key={seat} variant="caption">
+                  {seat}: {playerHandState.hand.length} cards, {playerBoardState?.score ?? 0} sets, 
+                  Completed: [{playerBoardState?.completedSets.join(', ') ?? ''}]
+                </Typography>
+              );
+            })}
           </Stack>
         </Box>
       </Stack>

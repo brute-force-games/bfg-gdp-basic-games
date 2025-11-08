@@ -1,9 +1,9 @@
-import { GoFishGameState } from '../../engine/go-fish-engine';
 import { ObserverComponentProps } from '@bfg-engine/models/game-engine/bfg-game-engine-types';
 import { GoFishRepresentation } from '../go-fish-representation';
 import { Box, Stack, Typography } from '@bfg-engine/ui/bfg-ui';
+import { GoFishPublicGameState } from '../../go-fish-types';
 
-export const GoFishObserverComponent = (props: ObserverComponentProps<GoFishGameState>) => {
+export const GoFishObserverComponent = (props: ObserverComponentProps<GoFishPublicGameState>) => {
   const { gameState, observedPlayerSeat } = props;
   
   const viewingSeat = observedPlayerSeat || 'p1';

@@ -188,7 +188,10 @@ const createInitialGameState = (
 };
 
 // Helper to check for complete sets in a hand and remove them
-const checkAndRemoveCompleteSets = (playerState: GoFishPlayerHandState): GoFishPlayerHandState => {
+const checkAndRemoveCompleteSets = (playerState: GoFishPlayerHandState): {
+  updatedHandState: GoFishPlayerHandState;
+  newlyCompletedSets: CardRank[];
+} => {
   const hand = playerState.hand;
   const rankCounts = new Map<CardRank, PlayingCard[]>();
   
@@ -200,26 +203,30 @@ const checkAndRemoveCompleteSets = (playerState: GoFishPlayerHandState): GoFishP
   }
   
   // Find complete sets (4 of a kind)
-  const completedSets: CardRank[] = [];
+  const newlyCompletedSets: CardRank[] = [];
   const cardsToRemove: PlayingCard[] = [];
   
   for (const [rank, cards] of rankCounts.entries()) {
     if (cards.length === 4) {
-      completedSets.push(rank);
+      newlyCompletedSets.push(rank);
       cardsToRemove.push(...cards);
     }
   }
   
-  if (completedSets.length === 0) {
-    return playerState;
+  if (newlyCompletedSets.length === 0) {
+    return {
+      updatedHandState: playerState,
+      newlyCompletedSets: [],
+    };
   }
   
   const newHand = removeCardsFromHand(hand, cardsToRemove);
   
   return {
-    hand: newHand,
-    // completedSets: [...playerState.completedSets, ...completedSets],
-    // score: playerState.score + completedSets.length,
+    updatedHandState: {
+      hand: newHand,
+    },
+    newlyCompletedSets,
   };
 };
 
@@ -343,13 +350,14 @@ const applyGoFishPlayerAction = async (
       };
       const newPlayerHand = [...playerHand, ...matchingCards];
       
-      let updatedPlayerHand = {
+      let updatedPlayerHandState = {
         ...playerHandState,
         hand: newPlayerHand,
       };
       
       // Check for complete sets
-      updatedPlayerHand = checkAndRemoveCompleteSets(updatedPlayerHand);
+      const { updatedHandState, newlyCompletedSets } = checkAndRemoveCompleteSets(updatedPlayerHandState);
+      updatedPlayerHandState = updatedHandState;
 
       const playerBoardState = gameState.playerBoardStates[playerSeat];
       if (!playerBoardState) {
@@ -364,22 +372,25 @@ const applyGoFishPlayerAction = async (
         ...gameState,
         playerHandStates: {
           ...gameState.playerHandStates,
-          [playerSeat]: updatedPlayerHand,
+          [playerSeat]: updatedPlayerHandState,
           [targetPlayerSeat]: newTargetHandState,
         },
         playerBoardStates: {
           ...gameState.playerBoardStates,
           [playerSeat]: {
             ...gameState.playerBoardStates[playerSeat],
-            handSize: updatedPlayerHand.hand.length,
-            score: playerBoardState.score + 1,
+            handSize: updatedPlayerHandState.hand.length,
+            score: playerBoardState.score + newlyCompletedSets.length,
+            completedSets: [...playerBoardState.completedSets, ...newlyCompletedSets],
           },
           [targetPlayerSeat]: {
             ...gameState.playerBoardStates[targetPlayerSeat],
             handSize: newTargetHand.length,
           },
         },
-        lastAction: `${playerSeat} got ${matchingCards.length} ${requestedRank}(s) from ${targetPlayerSeat}`,
+        lastAction: `${playerSeat} got ${matchingCards.length} ${requestedRank}(s) from ${targetPlayerSeat}${
+          newlyCompletedSets.length > 0 ? ` and completed ${newlyCompletedSets.length} set(s)!` : ''
+        }`,
         // Player gets another turn
       };
       
@@ -437,13 +448,23 @@ const applyGoFishPlayerAction = async (
       const newDeck = gameState.deck.slice(1);
       const newPlayerHand = [...playerHand, drawnCard];
       
-      let updatedPlayerState = {
+      let updatedPlayerHandState = {
         ...gameState.playerHandStates[playerSeat],
         hand: newPlayerHand,
       };
       
       // Check for complete sets
-      updatedPlayerState = checkAndRemoveCompleteSets(updatedPlayerState);
+      const { updatedHandState, newlyCompletedSets } = checkAndRemoveCompleteSets(updatedPlayerHandState);
+      updatedPlayerHandState = updatedHandState;
+      
+      const playerBoardState = gameState.playerBoardStates[playerSeat];
+      if (!playerBoardState) {
+        return {
+          tablePhase: 'table-phase-error',
+          gameSpecificState: gameState,
+          gameSpecificStateSummary: `${playerSeat} not in game`,
+        };
+      }
       
       // If drawn card matches requested rank, player gets another turn
       const drawnMatchesRequest = drawnCard.rank === requestedRank;
@@ -454,14 +475,28 @@ const applyGoFishPlayerAction = async (
       const newGameState: GoFishHostGameState = {
         ...gameState,
         deck: newDeck,
+        deckCount: newDeck.length,
         playerHandStates: {
           ...gameState.playerHandStates,
-          [playerSeat]: updatedPlayerState,
+          [playerSeat]: updatedPlayerHandState,
+        },
+        playerBoardStates: {
+          ...gameState.playerBoardStates,
+          [playerSeat]: {
+            ...playerBoardState,
+            handSize: updatedPlayerHandState.hand.length,
+            score: playerBoardState.score + newlyCompletedSets.length,
+            completedSets: [...playerBoardState.completedSets, ...newlyCompletedSets],
+          },
         },
         currentPlayerSeat: nextPlayerSeat,
         lastAction: drawnMatchesRequest
-          ? `Go Fish! ${playerSeat} drew a ${drawnCard.rank} and gets another turn`
-          : `Go Fish! ${playerSeat} drew a card. Turn passes to ${nextPlayerSeat}`,
+          ? `Go Fish! ${playerSeat} drew a ${drawnCard.rank} and gets another turn${
+              newlyCompletedSets.length > 0 ? ` and completed ${newlyCompletedSets.length} set(s)!` : ''
+            }`
+          : `Go Fish! ${playerSeat} drew a card. Turn passes to ${nextPlayerSeat}${
+              newlyCompletedSets.length > 0 ? ` (${playerSeat} completed ${newlyCompletedSets.length} set(s)!)` : ''
+            }`,
       };
       
       // Check if game is over
@@ -521,7 +556,7 @@ const applyGoFishHostAction = async (
 };
 
 // Get next players to act
-const getNextToActPlayers = (_gameTable: GameTable, gameState: GoFishPublicGameState): GameTableSeat[] => {
+const getNextToActPlayers = (_gameTable: GameTable, gameState: GoFishHostGameState): GameTableSeat[] => {
   if (gameState.isGameOver) {
     return [];
   }
@@ -530,7 +565,7 @@ const getNextToActPlayers = (_gameTable: GameTable, gameState: GoFishPublicGameS
 };
 
 // Get player details for display
-const getPlayerDetailsLine = (gameState: GoFishPublicGameState, playerSeat: GameTableSeat): React.ReactNode => {
+const getPlayerDetailsLine = (gameState: GoFishHostGameState, playerSeat: GameTableSeat): React.ReactNode => {
   const playerState = gameState.playerBoardStates[playerSeat];
   if (!playerState) {
     return `${playerSeat}: Not in game`;

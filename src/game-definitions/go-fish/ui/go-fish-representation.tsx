@@ -1,6 +1,7 @@
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { Box, Typography, Stack } from "@bfg-engine/ui/bfg-ui";
 import { GoFishPlayerHandState, GoFishPublicGameState } from "../go-fish-types";
+import { PlayingCard } from "../engine/engine-utils";
 
 
 interface GoFishRepresentationProps {
@@ -10,8 +11,72 @@ interface GoFishRepresentationProps {
 }
 
 // Component to display a playing card
+const CardDisplay = ({ card }: { card: PlayingCard }) => {
+  const suitColor = card.suit === '♥' || card.suit === '♦' ? '#e74c3c' : '#2c3e50';
+  
+  return (
+    <Box
+      style={{
+        padding: '8px 12px',
+        backgroundColor: 'white',
+        border: '2px solid #bdc3c7',
+        borderRadius: '6px',
+        minWidth: '50px',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        color: suitColor,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      }}
+    >
+      <div>{card.rank}</div>
+      <div style={{ fontSize: '20px' }}>{card.suit}</div>
+    </Box>
+  );
+};
 
 // Component to display player's hand
+const HandDisplay = ({ hand }: { hand: PlayingCard[] }) => {
+  if (hand.length === 0) {
+    return (
+      <Typography variant="body2" style={{ fontStyle: 'italic', color: '#7f8c8d' }}>
+        No cards in hand
+      </Typography>
+    );
+  }
+
+  // Group cards by rank for easier viewing
+  const cardsByRank = new Map<string, PlayingCard[]>();
+  for (const card of hand) {
+    const cards = cardsByRank.get(card.rank) || [];
+    cards.push(card);
+    cardsByRank.set(card.rank, cards);
+  }
+
+  return (
+    <Box>
+      <Typography variant="body2" style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+        Your Hand ({hand.length} cards):
+      </Typography>
+      <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        {Array.from(cardsByRank.entries())
+          .sort(([a], [b]) => {
+            const rankOrder = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            return rankOrder.indexOf(a) - rankOrder.indexOf(b);
+          })
+          .map(([rank, cards]) => (
+            <Box key={rank} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+              <Box style={{ display: 'flex', gap: '4px' }}>
+                {cards.map((card, idx) => (
+                  <CardDisplay key={`${card.rank}-${card.suit}-${idx}`} card={card} />
+                ))}
+              </Box>
+            </Box>
+          ))}
+      </Box>
+    </Box>
+  );
+};
 
 // Component to display completed sets
 const SetsDisplay = ({ completedSets, score }: { completedSets: string[]; score: number }) => {
@@ -79,6 +144,9 @@ export const GoFishRepresentation = (props: GoFishRepresentationProps) => {
           </Typography>
         </Box>
 
+        {/* My player state:
+        <pre>{JSON.stringify(myPlayerState, null, 2)}</pre> */}
+
         {/* My hand */}
         {myPlayerState && (
           <Box
@@ -95,7 +163,7 @@ export const GoFishRepresentation = (props: GoFishRepresentationProps) => {
                 <span style={{ color: '#3498db', marginLeft: '8px' }}>← Your Turn</span>
               )}
             </Typography>
-            {/* <HandDisplay playerState={myPlayerState} isMyHand={true} /> */}
+            <HandDisplay hand={myPlayerState.hand} />
             <SetsDisplay completedSets={gameState.playerBoardStates[myPlayerSeat]?.completedSets ?? []} score={gameState.playerBoardStates[myPlayerSeat]?.score ?? 0} />
           </Box>
         )}
