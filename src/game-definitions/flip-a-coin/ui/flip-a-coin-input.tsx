@@ -1,4 +1,4 @@
-import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+import type { GameTableSeat } from "../../../../../bfg-engine/src/models/game-table/game-room";
 import { FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT, FlipACoinPlayerAction, FlipACoinGameState, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
 import { Button, Box, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 

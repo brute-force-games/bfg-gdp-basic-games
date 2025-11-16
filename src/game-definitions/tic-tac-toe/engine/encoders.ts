@@ -1,4 +1,4 @@
-import { createJsonZodObjectDataEncoder } from "@bfg-engine/models/game-engine/encoders"
+import { createJsonZodObjectDataEncoder } from "@bfg-engine/game-metadata/encoders"
 import { TicTacToeGameStateSchema, TicTacToeHostActionSchema, TicTacToePlayerActionSchema } from "./tic-tac-toe-engine";
 
 

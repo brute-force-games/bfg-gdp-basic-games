@@ -1,62 +1,6 @@
-import { z } from "zod";
+import { PlayingCard, CardRank } from "@bfg-engine/game-stock/std-card-games/types";
+import { createCardId } from "@bfg-engine/game-stock/std-card-games/types";
 
-// Card ranks for standard playing cards
-export const CardRankSchema = z.enum([
-  'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'
-]);
-
-export type CardRank = z.infer<typeof CardRankSchema>;
-
-// Card suits for standard playing cards
-export const CardSuitSchema = z.enum(['hearts', 'diamonds', 'clubs', 'spades']);
-
-export type CardSuit = z.infer<typeof CardSuitSchema>;
-
-// A playing card
-export const PlayingCardSchema = z.object({
-  rank: CardRankSchema,
-  suit: CardSuitSchema,
-});
-
-export type PlayingCard = z.infer<typeof PlayingCardSchema>;
-
-// Card ID is a string representation: "rank-suit"
-export const createCardId = (card: PlayingCard): string => {
-  return `${card.rank}-${card.suit}`;
-};
-
-export const parseCardId = (cardId: string): PlayingCard => {
-  const [rank, suit] = cardId.split('-');
-  return {
-    rank: rank as CardRank,
-    suit: suit as CardSuit,
-  };
-};
-
-// Create a standard 52-card deck
-export const createStandardDeck = (): PlayingCard[] => {
-  const ranks: CardRank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-  const suits: CardSuit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
-  
-  const deck: PlayingCard[] = [];
-  for (const suit of suits) {
-    for (const rank of ranks) {
-      deck.push({ rank, suit });
-    }
-  }
-  
-  return deck;
-};
-
-// Shuffle an array using Fisher-Yates algorithm
-export const shuffleArray = <T>(array: T[]): T[] => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-};
 
 // Check if a set of cards forms a complete set (4 of the same rank)
 export const isCompleteSet = (cards: PlayingCard[]): boolean => {
@@ -97,4 +41,3 @@ export const getUniqueRanksInHand = (hand: PlayingCard[]): CardRank[] => {
   const ranks = new Set(hand.map(card => card.rank));
   return Array.from(ranks);
 };
-

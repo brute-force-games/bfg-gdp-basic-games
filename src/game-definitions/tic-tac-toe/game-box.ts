@@ -9,7 +9,9 @@ import {
   TicTacToeHostActionSchema,
   TicTacToePlayerActionSchema
 } from "./engine/tic-tac-toe-engine";
-import { BfgAllPublicKnowledgeGameEngineComponents, BfgPrivatePlayerKnowledgeImplStateSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+import type { IBfgGameEngineComponents } from "@bfg-engine/game-metadata/ui/bfg-game-components";
+import { BfgPrivatePlayerKnowledgeImplStateSchema } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
+import { BfgGameSpecificPlayerActionOutcomeSchema, BfgGameSpecificHostActionOutcomeSchema } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
 import { TicTacToePlayerComponent } from "./ui/components/tic-tac-toe-player-component";
 import { TicTacToeObserverComponent } from "./ui/components/tic-tac-toe-observer-component";
 import { TicTacToeHostComponent } from "./ui/components/tic-tac-toe-host-component";
@@ -63,6 +65,8 @@ const TicTacToeGameSchemas: BfgGameEngineSchemas = {
   publicGameStateSchema: TicTacToeGameStateSchema,
   playerActionSchema: TicTacToePlayerActionSchema,
   hostActionSchema: TicTacToeHostActionSchema,
+  playerActionOutcomeSchema: BfgGameSpecificPlayerActionOutcomeSchema,
+  hostActionOutcomeSchema: BfgGameSpecificHostActionOutcomeSchema,
   privatePlayerKnowledgeSchema: BfgPrivatePlayerKnowledgeImplStateSchema,
 };
 

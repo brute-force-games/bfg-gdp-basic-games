@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { getWordInfoFromInternalWordList } from "./hangman-engine-utils";
 import { BfgSupportedGameTitle, GameTableSeatSchema } from "@bfg-engine";
-import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-ids";
+import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-uuids";
 import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { GameTableActionResult } from "@bfg-engine/models/game-table/table-phase";
-import { BfgGameSpecificGameStateSchema, BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
-import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
+import { BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
+import type { DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
+import { BfgGameImplHostActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
-import { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+import type { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/game-metadata/metadata-types";
 
 export const HangmanGameName = 'Hangman' as BfgSupportedGameTitle;
 
@@ -271,7 +272,7 @@ const createInitialHangmanGameTableAction = (
 const _applyPlayerPicksHiddenWordAction = (
   gameState: HangmanGameState,
   gameAction: HangmanPlayerPicksHiddenWord,
-): GameTableActionResult<HangmanGameState> => {
+): GameTableActionResult<'player', HangmanGameState, {}> => {
   
   const hiddenWord = gameAction.hiddenWordInfo.hiddenWord;
   const numberOfWrongGuessesToLose = gameAction.hiddenWordInfo.numberOfWrongGuessesToLose;
@@ -289,10 +290,12 @@ const _applyPlayerPicksHiddenWordAction = (
 
   return {
     tablePhase: 'table-phase-game-in-progress',
+    actionSource: 'player',
     gameSpecificState: {
       ...gameState,
       playerHiddenWordSubmissions: updatedPlayerHiddenWordSubmissions,
     },
+    gameSpecificActionOutcome: {},
     gameSpecificStateSummary: summary,
   }
 }
@@ -345,12 +348,14 @@ const _applyPlayerPicksHiddenWordAction = (
 const _applyPlayerGuessLetterAction = (
   gameState: HangmanGameState,
   gameAction: HangmanPlayerGuessLetter,
-): GameTableActionResult<HangmanGameState> => {
+): GameTableActionResult<'player', HangmanGameState, {}> => {
 
   if (!gameState.hiddenWordInfo) {
     return {
       tablePhase: 'table-phase-error',
+      actionSource: 'player',
       gameSpecificState: gameState,
+      gameSpecificActionOutcome: {},
       gameSpecificStateSummary: `Letter guess not possible - hidden word not set`,
     }
   }
@@ -376,22 +381,26 @@ const _applyPlayerGuessLetterAction = (
     if (outOfGuesses) {
       return {
         tablePhase: 'table-phase-game-complete-no-winners',
+        actionSource: 'player',
         gameSpecificState: {
           ...gameState,
           numberOfWrongGuesses,
           lettersGuessed: updatedLettersGuessed,
         },
+        gameSpecificActionOutcome: {},
         gameSpecificStateSummary: `No wrong guesses remaining [out of ${numberOfWrongGuesses}] - final guess was ${guess}.`,
       }
     }
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'player',
       gameSpecificState: {
         ...gameState,
         numberOfWrongGuesses,
         lettersGuessed: updatedLettersGuessed,
       },
+      gameSpecificActionOutcome: {},
       gameSpecificStateSummary: `Guess ${guess} was wrong - ${numWrongGuessesRemaining} wrong guesses remaining.`,
     }
   }
@@ -407,6 +416,7 @@ const _applyPlayerGuessLetterAction = (
   if (isGameWon) {
     return {
       tablePhase: 'table-phase-game-complete-with-winners',
+      actionSource: 'player',
       gameSpecificState: {
         ...gameState,
         isGameOver: true,
@@ -414,17 +424,20 @@ const _applyPlayerGuessLetterAction = (
         lettersGuessed: updatedLettersGuessed,
         hiddenWordState: updatedHiddenWordState,
       },
+      gameSpecificActionOutcome: {},
       gameSpecificStateSummary: `Game won! The word was ${hiddenWord}`,
     }
   }
 
   return {
     tablePhase: 'table-phase-game-in-progress',
+    actionSource: 'player',
     gameSpecificState: {
       ...gameState,
       lettersGuessed: updatedLettersGuessed,
       hiddenWordState: updatedHiddenWordState,
     },
+    gameSpecificActionOutcome: {},
     gameSpecificStateSummary: `Guess ${guess} was correct - current word state is ${updatedHiddenWordState}`,
   }
 }
@@ -434,7 +447,7 @@ const applyHangmanPlayerAction = async (
   _tableState: GameTable,
   gameState: HangmanGameState,
   playerAction: HangmanPlayerAction,
-): Promise<GameTableActionResult<HangmanGameState>> => {
+): Promise<GameTableActionResult<'player', HangmanGameState, {}>> => {
 
   console.log("APPLY HANGMAN PLAYER ACTION - GAME STATE", gameState);
   console.log("APPLY HANGMAN PLAYER ACTION - PLAYER ACTION", playerAction);
@@ -452,18 +465,22 @@ const applyHangmanPlayerAction = async (
   if (playerAction.playerActionType === HANGMAN_PLAYER_ACTION_CANCEL_GAME) {
     return {
       tablePhase: 'table-phase-game-abandoned',
+      actionSource: 'player',
       gameSpecificState: {
         ...gameState,
         isGameOver: true,
         outcomeSummary: playerAction.cancellationReason,
       },
+      gameSpecificActionOutcome: {},
       gameSpecificStateSummary: playerAction.cancellationReason,
     }
   }
 
   return {
     tablePhase: 'table-phase-error',
+    actionSource: 'player',
     gameSpecificState: gameState,
+    gameSpecificActionOutcome: {},
     gameSpecificStateSummary: `Error - invalid player action: ${(playerAction as any).playerActionType}`,
   };
 }
@@ -473,7 +490,7 @@ const applyHangmanHostAction = async (
   _tableState: GameTable,
   gameState: HangmanGameState,
   hostAction: HangmanHostAction,
-): Promise<GameTableActionResult<HangmanGameState>> => {
+): Promise<GameTableActionResult<'host', HangmanGameState, {}>> => {
 
   console.log("APPLY HANGMAN HOST ACTION - GAME STATE", gameState);
   console.log("APPLY HANGMAN HOST ACTION - HOST ACTION", hostAction);
@@ -521,14 +538,18 @@ const applyHangmanHostAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'host',
       gameSpecificState: newGameState,
+      gameSpecificActionOutcome: {},
       gameSpecificStateSummary: 'Game started',
     };
   }
 
   return {
     tablePhase: 'table-phase-error',
+    actionSource: 'host',
     gameSpecificState: gameState,
+    gameSpecificActionOutcome: {},
     gameSpecificStateSummary: `Error - invalid host action: ${hostAction.hostActionType}`,
   };
 }
@@ -552,7 +573,9 @@ const getPlayerDetailsLine = (gameState: HangmanGameState, playerSeat: GameTable
 export const HangmanGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   HangmanGameState,
   HangmanPlayerAction,
-  HangmanHostAction
+  {},
+  HangmanHostAction,
+  {}
 > = {
   gameTitle: HangmanGameName,
   
@@ -565,4 +588,5 @@ export const HangmanGameProcessor: IBfgAllPublicKnowledgeGameProcessor<
   getPlayerDetailsLine: getPlayerDetailsLine,
 
   getAllPlayersPrivateKnowledge: () => null,
+  summarizeGameAction: (gameAction: DbGameTableAction) => `Hangman action: ${gameAction.actionType}`,
 };

@@ -7,6 +7,8 @@ import { GoFishHostComponent } from "./ui/components/go-fish-host-component";
 import { GoFishPlayerAction, GoFishHostAction, GoFishPlayerHandState, GoFishHostGameState, GoFishHostActionSchema, GoFishHostGameStateSchema, GoFishPlayerActionSchema, GoFishPlayerHandStateSchema, GoFishPublicGameStateSchema, GoFishPublicGameState } from "./go-fish-types";
 import { createGameMetadata } from "@bfg-engine/game-metadata/metadata-factory";
 import { BfgGameEngineSchemas } from "@bfg-engine/models/game-engine/bfg-game-engine-schemas";
+import { BfgGameSpecificPlayerActionOutcomeSchema, BfgGameSpecificHostActionOutcomeSchema } from "@bfg-engine/models/game-table/game-table-action";
+import { GoFishGameSpine } from "./ui/go-fish-game-spine";
 
 
 export const GoFishGameDefinition: GameDefinition = {
@@ -25,6 +27,7 @@ export const GoFishGameComponents: BfgGameEngineComponents<
   ObserverComponent: GoFishObserverComponent,
   PlayerComponent: GoFishPlayerComponent,
   HostComponent: GoFishHostComponent,
+  GameSpineComponent: GoFishGameSpine,
 };
 
 
@@ -64,6 +67,8 @@ const GoFishGameSchemas: BfgGameEngineSchemas = {
   publicGameStateSchema: GoFishPublicGameStateSchema,
   playerActionSchema: GoFishPlayerActionSchema,
   hostActionSchema: GoFishHostActionSchema,
+  playerActionOutcomeSchema: BfgGameSpecificPlayerActionOutcomeSchema,
+  hostActionOutcomeSchema: BfgGameSpecificHostActionOutcomeSchema,
   privatePlayerKnowledgeSchema: GoFishPlayerHandStateSchema,
 };
 

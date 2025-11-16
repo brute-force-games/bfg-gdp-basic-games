@@ -4,7 +4,7 @@ import { TicTacToeGrid } from '../tic-tac-toe-grid';
 import { Box, Stack } from '@bfg-engine/ui/bfg-ui';
 
 
-export const TicTacToePlayerComponent = (props: PlayerComponentProps<TicTacToeGameState, TicTacToePlayerAction, never>) => {
+export const TicTacToePlayerComponent = (props: PlayerComponentProps<TicTacToeGameState, TicTacToePlayerAction, null>) => {
   const { gameState, currentPlayerSeat, onPlayerAction } = props;
   
   return (
@@ -20,7 +20,6 @@ export const TicTacToePlayerComponent = (props: PlayerComponentProps<TicTacToeGa
           myPlayerSeat={currentPlayerSeat}
           gameState={gameState}
           onGameAction={(_, gameAction) => {
-            // Convert TicTacToeMove to TicTacToePlayerAction
             const playerAction: TicTacToePlayerAction = {
               source: 'player',
               playerActionType: 'game-table-action-player-move',

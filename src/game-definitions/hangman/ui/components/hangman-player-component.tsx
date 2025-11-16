@@ -5,7 +5,8 @@ import { HangmanInput } from '../hangman-input';
 import { Typography, Stack } from '@bfg-engine/ui/bfg-ui';
 import { convertDbGameTableActionToHangmanGameAction } from '../hangman-action-converter';
 
-export const HangmanPlayerComponent = (props: PlayerComponentProps<HangmanGameState, HangmanPlayerAction>) => {
+
+export const HangmanPlayerComponent = (props: PlayerComponentProps<HangmanGameState, HangmanPlayerAction, null>) => {
   const { gameState, currentPlayerSeat, onPlayerAction, latestGameAction } = props;
   
   const mostRecentAction = convertDbGameTableActionToHangmanGameAction(latestGameAction);

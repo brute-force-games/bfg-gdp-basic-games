@@ -5,12 +5,13 @@ import {
   GameTableActionResult,
   BfgSupportedGameTitle,
 } from "@bfg-engine";
-import { GameTableSeat, PLAYER_SEATS } from "@bfg-engine/models/game-table/game-table";
+import { GameTableSeat, ALL_PLAYER_SEATS } from "@bfg-engine/models/game-table/game-table";
 import { GameTable } from "@bfg-engine/models/game-table/game-table";
 import { BfgGameImplHostActionSchema, BfgGameImplPlayerActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
 import { IBfgGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
+import type { DbGameTableAction } from "../../../../../bfg-engine/src/models/game-table/game-table-action";
 
 
 export const FlipACoinGameName = 'Flip a Coin' as BfgSupportedGameTitle;
@@ -182,7 +183,7 @@ const applyFlipACoinGameAction = async (
   _tableState: GameTable,
   gameState: FlipACoinGameState,
   gameAction: FlipACoinPlayerAction,
-): Promise<GameTableActionResult<FlipACoinGameState>> => {
+): Promise<GameTableActionResult<'player', FlipACoinGameState, null>> => {
 
   console.log("APPLY FLIP A COIN GAME ACTION - GAME STATE", gameState);
   console.log("APPLY FLIP A COIN GAME ACTION - GAME ACTION", gameAction);
@@ -193,6 +194,8 @@ const applyFlipACoinGameAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'player',
+      gameSpecificActionOutcome: null,
       gameSpecificState: {
         ...gameState,
         chosenCoin: gameAction.chosenCoin,
@@ -207,6 +210,8 @@ const applyFlipACoinGameAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'player',
+      gameSpecificActionOutcome: null,
       gameSpecificState: {
         ...gameState,
         playerFlipResultPreferences: { 
@@ -224,6 +229,8 @@ const applyFlipACoinGameAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'player',
+      gameSpecificActionOutcome: null,
       gameSpecificState: {
         ...gameState,
         isFlipped: true,
@@ -240,6 +247,8 @@ const applyFlipACoinGameAction = async (
     if (!gameState.isFlipped) {
       return {
         tablePhase: 'table-phase-error',
+        actionSource: 'player',
+        gameSpecificActionOutcome: null,
         gameSpecificState: {
           ...gameState,
           isGameOver: true,
@@ -249,7 +258,7 @@ const applyFlipACoinGameAction = async (
       }
     }
 
-    const winningPlayers = PLAYER_SEATS.filter(seat => {
+    const winningPlayers = ALL_PLAYER_SEATS.filter(seat => {
       const playerFlipResultPreference = gameState.playerFlipResultPreferences[seat];
       return playerFlipResultPreference === gameState.flipResult;
     });
@@ -261,6 +270,8 @@ const applyFlipACoinGameAction = async (
 
       return {
         tablePhase: 'table-phase-game-complete-with-winners',
+        actionSource: 'player',
+        gameSpecificActionOutcome: null,
         gameSpecificState: {
           ...gameState,
           isGameOver: true,
@@ -275,6 +286,8 @@ const applyFlipACoinGameAction = async (
 
     return {
       tablePhase: 'table-phase-game-complete-with-draw',
+      actionSource: 'player',
+      gameSpecificActionOutcome: null,
       gameSpecificState: {
         ...gameState,
         isGameOver: true,
@@ -288,6 +301,8 @@ const applyFlipACoinGameAction = async (
   if (gameAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME) {
     return {
       tablePhase: 'table-phase-game-abandoned',
+      actionSource: 'player',
+      gameSpecificActionOutcome: null,
       gameSpecificState: {
         ...gameState,
         isGameOver: true,
@@ -299,6 +314,8 @@ const applyFlipACoinGameAction = async (
 
   return {
     tablePhase: 'table-phase-error',
+    actionSource: 'player',
+    gameSpecificActionOutcome: null,
     gameSpecificState: gameState,
     gameSpecificStateSummary: `Error - invalid game action`,
   };
@@ -309,7 +326,7 @@ const applyFlipACoinHostAction = async (
   _tableState: GameTable,
   gameState: FlipACoinGameState,
   hostAction: FlipACoinHostAction,
-): Promise<GameTableActionResult<FlipACoinGameState>> => {
+): Promise<GameTableActionResult<'host', FlipACoinGameState, null>> => {
 
   console.log("APPLY FLIP A COIN HOST ACTION - GAME STATE", gameState);
   console.log("APPLY FLIP A COIN HOST ACTION - HOST ACTION", hostAction);
@@ -319,6 +336,8 @@ const applyFlipACoinHostAction = async (
 
     return {
       tablePhase: 'table-phase-game-in-progress',
+      actionSource: 'host',
+      gameSpecificActionOutcome: null,
       gameSpecificState: {
         ...gameState,
         outcomeSummary: summary,
@@ -329,6 +348,8 @@ const applyFlipACoinHostAction = async (
 
   return {
     tablePhase: 'table-phase-error',
+    actionSource: 'host',
+    gameSpecificActionOutcome: null,
     gameSpecificState: gameState,
     gameSpecificStateSummary: `Error - invalid host action`,
   };
@@ -361,9 +382,12 @@ const getPlayerDetailsLine = (gameState: FlipACoinGameState, playerSeat: GameTab
 
 const flipACoinProcessorImplementation: IBfgGameProcessor<
   FlipACoinGameState,
+  FlipACoinGameState,
   FlipACoinPlayerAction,
+  null,
   FlipACoinHostAction,
-  never
+  null,
+  null
 > = {
   gameTitle: FlipACoinGameName,
 
@@ -375,6 +399,7 @@ const flipACoinProcessorImplementation: IBfgGameProcessor<
   getNextToActPlayers: getNextToActPlayers,
   getPlayerDetailsLine: getPlayerDetailsLine,
   getAllPlayersPrivateKnowledge: () => null,
+  summarizeGameAction: (gameAction: DbGameTableAction) => `Flip a coin action: ${gameAction.actionType}`,
 }
 
 

@@ -1,32 +1,55 @@
 import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
 import { Box, Typography, Stack } from "@bfg-engine/ui/bfg-ui";
 import { GoFishPlayerHandState, GoFishPublicGameState } from "../go-fish-types";
-import { PlayingCard } from "../engine/engine-utils";
+import { PlayingCard, CARD_SUIT_SPADES, CARD_SUIT_HEARTS, CARD_SUIT_DIAMONDS, CARD_SUIT_CLUBS } from "@bfg-engine/game-stock/std-card-games/types";
 
 
 interface GoFishRepresentationProps {
   myPlayerSeat: GameTableSeat;
   gameState: GoFishPublicGameState;
   myHandState: GoFishPlayerHandState | null;
+  onCardClick?: (rank: string) => void;
+  selectedRank?: string | null;
 }
 
 // Component to display a playing card
-const CardDisplay = ({ card }: { card: PlayingCard }) => {
-  const suitColor = card.suit === '♥' || card.suit === '♦' ? '#e74c3c' : '#2c3e50';
-  
+const CardDisplay = ({
+  card,
+  isClickable = false,
+  isSelected = false
+}: {
+  card: PlayingCard;
+  isClickable?: boolean;
+  isSelected?: boolean
+}) => {
+  const suitColor = card.suit === '♥️' || card.suit === '♦️' ? '#e74c3c' : '#2c3e50';
+
+  console.log(`CardDisplay: ${card.rank}${card.suit}, isSelected: ${isSelected}`);
+
   return (
     <Box
       style={{
         padding: '8px 12px',
-        backgroundColor: 'white',
-        border: '2px solid #bdc3c7',
+        backgroundColor: isSelected ? '#e8f5e8' : 'white',
+        border: `2px solid ${isSelected ? '#4caf50' : '#bdc3c7'}`,
         borderRadius: '6px',
         minWidth: '50px',
         textAlign: 'center',
         fontWeight: 'bold',
         fontSize: '16px',
         color: suitColor,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        boxShadow: isSelected
+          ? '0 4px 8px rgba(76, 175, 80, 0.3)'
+          : '0 2px 4px rgba(0,0,0,0.1)',
+        transition: isClickable ? 'all 0.2s ease' : 'none',
+        cursor: isClickable ? 'pointer' : 'default',
+        ...(isClickable && {
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+            borderColor: '#3498db',
+          }
+        })
       }}
     >
       <div>{card.rank}</div>
@@ -36,7 +59,19 @@ const CardDisplay = ({ card }: { card: PlayingCard }) => {
 };
 
 // Component to display player's hand
-const HandDisplay = ({ hand }: { hand: PlayingCard[] }) => {
+const HandDisplay = ({
+  hand,
+  onCardClick,
+  isClickable = false,
+  selectedRank
+}: {
+  hand: PlayingCard[],
+  onCardClick?: (rank: string) => void,
+  isClickable?: boolean,
+  selectedRank?: string | null
+}) => {
+  console.log('HandDisplay selectedRank:', selectedRank);
+
   if (hand.length === 0) {
     return (
       <Typography variant="body2" style={{ fontStyle: 'italic', color: '#7f8c8d' }}>
@@ -66,9 +101,26 @@ const HandDisplay = ({ hand }: { hand: PlayingCard[] }) => {
           })
           .map(([rank, cards]) => (
             <Box key={rank} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-              <Box style={{ display: 'flex', gap: '4px' }}>
+              <Box
+                style={{
+                  display: 'flex',
+                  gap: '4px',
+                  cursor: isClickable ? 'pointer' : 'default'
+                }}
+                onClick={() => {
+                  if (isClickable && onCardClick) {
+                    console.log('Card group clicked for rank:', rank);
+                    onCardClick(rank);
+                  }
+                }}
+              >
                 {cards.map((card, idx) => (
-                  <CardDisplay key={`${card.rank}-${card.suit}-${idx}`} card={card} />
+                  <CardDisplay
+                    key={`${card.rank}-${card.suit}-${idx}`}
+                    card={card}
+                    isClickable={isClickable}
+                    isSelected={selectedRank === card.rank}
+                  />
                 ))}
               </Box>
             </Box>
@@ -91,14 +143,29 @@ const SetsDisplay = ({ completedSets, score }: { completedSets: string[]; score:
             <Box
               key={idx}
               style={{
-                padding: '6px 12px',
+                padding: '6px 10px',
                 backgroundColor: '#2ecc71',
                 color: 'white',
                 borderRadius: '4px',
                 fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                minWidth: '80px',
               }}
             >
-              {rank} ×4
+              <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{rank}</div>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '1px',
+                fontSize: '12px'
+              }}>
+                <div>{CARD_SUIT_CLUBS}</div>
+                <div>{CARD_SUIT_DIAMONDS}</div>
+                <div>{CARD_SUIT_HEARTS}</div>
+                <div>{CARD_SUIT_SPADES}</div>
+              </div>
             </Box>
           ))}
         </Box>
@@ -108,41 +175,75 @@ const SetsDisplay = ({ completedSets, score }: { completedSets: string[]; score:
 };
 
 export const GoFishRepresentation = (props: GoFishRepresentationProps) => {
-  const { myPlayerSeat, gameState, myHandState } = props;
+  const { myPlayerSeat, gameState, myHandState, onCardClick, selectedRank } = props;
   const myPlayerState = myHandState;
 
-  const winnerListString = gameState.winningSeats.map(seat => seat.toString()).join(', ');
+  // const winnerListString = gameState.winningSeats.map(seat => seat.toString()).join(', ');
 
   return (
     <Box style={{ padding: '16px' }}>
       <Stack spacing={3}>
-        {/* Game status */}
-        <Box>
-          <Typography variant="h6">Go Fish</Typography>
-          <Typography variant="body2" color="secondary">
-            {gameState.isGameOver ? (
-              <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>
-                Game Over! {winnerListString} wins!
-              </span>
-            ) : (
-              <span>
-                Current Turn: <strong>{gameState.currentPlayerSeat}</strong>
-              </span>
-            )}
-          </Typography>
-          {gameState.lastAction && (
-            <Typography variant="body2" style={{ marginTop: '8px', fontStyle: 'italic' }}>
+        {/* Last action result - prominently displayed */}
+        {gameState.lastAction && (
+          <Box
+            style={{
+              padding: '16px',
+              backgroundColor: '#e8f5e8',
+              border: '2px solid #4caf50',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(76, 175, 80, 0.2)',
+            }}
+          >
+            <Typography
+              variant="h6"
+              style={{
+                color: '#2e7d32',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                marginBottom: '4px'
+              }}
+            >
+              🎯 Last Action
+            </Typography>
+            <Typography
+              variant="body1"
+              style={{
+                color: '#1b5e20',
+                textAlign: 'center',
+                fontSize: '16px'
+              }}
+            >
               {gameState.lastAction}
             </Typography>
-          )}
-        </Box>
+          </Box>
+        )}
 
-        {/* Deck info */}
-        <Box>
-          <Typography variant="body2">
-            Cards remaining in deck: <strong>{gameState.deckCount}</strong>
-          </Typography>
-        </Box>
+        {/* Current turn indicator */}
+        {!gameState.isGameOver && (
+          <Box
+            style={{
+              padding: '12px',
+              backgroundColor: gameState.currentPlayerSeat === myPlayerSeat ? '#fff3e0' : '#f5f5f5',
+              border: gameState.currentPlayerSeat === myPlayerSeat ? '2px solid #ff9800' : '1px solid #ddd',
+              borderRadius: '8px',
+              textAlign: 'center',
+            }}
+          >
+            <Typography
+              variant="body1"
+              style={{
+                fontWeight: gameState.currentPlayerSeat === myPlayerSeat ? 'bold' : 'normal',
+                color: gameState.currentPlayerSeat === myPlayerSeat ? '#e65100' : '#666',
+              }}
+            >
+              {gameState.currentPlayerSeat === myPlayerSeat ? (
+                <>🎲 Your Turn - {gameState.currentPlayerSeat}</>
+              ) : (
+                <>⏳ Waiting for {gameState.currentPlayerSeat}'s turn</>
+              )}
+            </Typography>
+          </Box>
+        )}
 
         {/* My player state:
         <pre>{JSON.stringify(myPlayerState, null, 2)}</pre> */}
@@ -157,19 +258,31 @@ export const GoFishRepresentation = (props: GoFishRepresentationProps) => {
               border: gameState.currentPlayerSeat === myPlayerSeat ? '3px solid #3498db' : '1px solid #bdc3c7',
             }}
           >
-            <Typography variant="subtitle1" style={{ marginBottom: '12px', fontWeight: 'bold' }}>
+            {/* <Typography variant="subtitle1" style={{ marginBottom: '12px', fontWeight: 'bold' }}>
               {myPlayerSeat} (You)
               {gameState.currentPlayerSeat === myPlayerSeat && (
                 <span style={{ color: '#3498db', marginLeft: '8px' }}>← Your Turn</span>
               )}
-            </Typography>
-            <HandDisplay hand={myPlayerState.hand} />
+            </Typography> */}
+            <HandDisplay
+              hand={myPlayerState.hand}
+              onCardClick={onCardClick}
+              isClickable={!gameState.isGameOver && gameState.currentPlayerSeat === myPlayerSeat}
+              selectedRank={selectedRank}
+            />
             <SetsDisplay completedSets={gameState.playerBoardStates[myPlayerSeat]?.completedSets ?? []} score={gameState.playerBoardStates[myPlayerSeat]?.score ?? 0} />
           </Box>
         )}
 
-        {/* Other players */}
+        {/* Deck info */}
         <Box>
+          <Typography variant="body2">
+            Cards remaining in deck: <strong>{gameState.deckCount}</strong>
+          </Typography>
+        </Box>
+
+        {/* Other players */}
+        {/* <Box>
           <Typography variant="subtitle1" style={{ marginBottom: '12px', fontWeight: 'bold' }}>
             Other Players
           </Typography>
@@ -192,12 +305,11 @@ export const GoFishRepresentation = (props: GoFishRepresentationProps) => {
                       <span style={{ color: '#3498db', marginLeft: '8px' }}>← Current Turn</span>
                     )}
                   </Typography>
-                  {/* <HandDisplay playerHandState={playerBoardState.handState} isMyHand={false} /> */}
                   <SetsDisplay completedSets={gameState.playerBoardStates[seat as GameTableSeat]?.completedSets ?? []} score={gameState.playerBoardStates[seat as GameTableSeat]?.score ?? 0} />
                 </Box>
               ))}
           </Stack>
-        </Box>
+        </Box> */}
       </Stack>
     </Box>
   );
