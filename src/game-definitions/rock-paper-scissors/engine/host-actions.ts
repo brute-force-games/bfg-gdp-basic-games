@@ -1,10 +1,13 @@
 import { z } from 'zod'
 import { ROCK_PAPER_SCISSORS_HOST_ACTION_CALL_ROUND_WINNER, ROCK_PAPER_SCISSORS_HOST_ACTION_CALL_GAME_WINNER, ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME } from './action-types';
-import { BfgGameActionByHostSchema, BfgGameActionHostOutcomeStrSchema, BfgGameActionPublicOutcomeStrSchema, type BfgGameActionHostOutcomeStr, type BfgGameActionPublicOutcomeStr } from '../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types';
-import { createHostActionDefinition } from '../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-definition-types';
-import type { RockPaperScissorsBfgGameSpecificHostActionOutcome, RockPaperScissorsHostGameState } from '../rock-paper-scissors-types';
-import type { GameTable } from '../../../../../bfg-engine/src/models/game-table/game-table';
+// import { BfgGameActionByHostSchema, BfgGameActionHostOutcomeStrSchema, BfgGameActionPublicOutcomeStrSchema, type BfgGameActionHostOutcomeStr, type BfgGameActionPublicOutcomeStr } from '../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types';
+// import { createHostActionDefinition } from '../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-definition-types';
+import type { RockPaperScissorsBfgGameSpecificHostActionOutcome, RockPaperScissorsHostGameState, RpsPlayerSeatSummaries } from '../rock-paper-scissors-types';
+import type { GameTable } from '@bfg-engine/models/game-table/game-table';
 import { buildPlayerSeatSummaries } from './player-actions';
+import { BfgGameActionByHostSchema } from '@bfg-engine/game-metadata/metadata-types/game-action-types';
+import type { GameTableSeatId } from '@bfg-engine/models/types/bfg-branded-ids';
+import { BfgGameActionHostOutcomeStrToolbox, BfgGameActionWatcherOutcomeStrToolbox, type BfgGameActionHostOutcomeStr, type BfgGameActionWatcherOutcomeStr } from '@bfg-engine/models/types/bfg-branded-string-types';
 
 
 export const RockPaperScissorsHostActionStartGameSchema = BfgGameActionByHostSchema.extend({
@@ -48,6 +51,12 @@ export const AllRockPaperScissorsHostActionsSchema = z.array(AnyRockPaperScissor
 export type AllRockPaperScissorsHostActions = z.infer<typeof AllRockPaperScissorsHostActionsSchema>;
 
 
+// export type RpsPlayerSeatSummaries = {
+//   [PlayerSeat1]: BfgGameActionPlayerOutcomeStr;
+//   [PlayerSeat2]: BfgGameActionPlayerOutcomeStr;
+// }
+
+
 
 // export const AnyRockPaperScissorsPlayerActionSchema = z.union([
 //   RockPaperScissorsPlayerActionSetHandSchema,
@@ -78,20 +87,32 @@ export const handleRockPaperScissorsHostActionStartGame = (
   gameState: RockPaperScissorsHostGameState,
   _hostAction: RockPaperScissorsHostActionStartGame
 ): RockPaperScissorsBfgGameSpecificHostActionOutcome => {
-  return {
+
+  const retVal: RockPaperScissorsBfgGameSpecificHostActionOutcome = {
+    source: 'host',
     updatedGameState: gameState,
-    watcherSummary: "Host started the game." as BfgGameActionPublicOutcomeStr,
-    playerSeatSummaries: buildPlayerSeatSummaries("p1", "You started the game.", "Player 1 started the game."),
-    hostSummary: "Host started the game." as BfgGameActionHostOutcomeStr,
-    nextActions: null,
-  } as RockPaperScissorsBfgGameSpecificHostActionOutcome;
+    // watcherSummary: "Host started the game." as BfgGameActionWatcherOutcomeStr,
+    // playerSeatSummaries: buildPlayerSeatSummaries("p1" as GameTableSeatId, "You started the game.", "Player 1 started the game."),
+    // hostSummary: "Host started the game." as BfgGameActionHostOutcomeStr,
+    // nextActions: null,
+  };
+
+  return retVal;
+
+  // return {
+  //   updatedGameState: gameState,
+  //   watcherSummary: "Host started the game." as BfgGameActionWatcherOutcomeStr,
+  //   playerSeatSummaries: buildPlayerSeatSummaries("p1" as GameTableSeatId, "You started the game.", "Player 1 started the game."),
+  //   hostSummary: "Host started the game." as BfgGameActionHostOutcomeStr,
+  //   nextActions: null,
+  // } as RockPaperScissorsBfgGameSpecificHostActionOutcome;
 };
 
-const toPublicOutcome = (message: string): BfgGameActionPublicOutcomeStr =>
-  BfgGameActionPublicOutcomeStrSchema.parse(message);
+const toPublicOutcome = (message: string): BfgGameActionWatcherOutcomeStr =>
+  BfgGameActionWatcherOutcomeStrToolbox.createBrandedString(message);
 
 const toHostOutcome = (message: string): BfgGameActionHostOutcomeStr =>
-  BfgGameActionHostOutcomeStrSchema.parse(message);
+  BfgGameActionHostOutcomeStrToolbox.createBrandedString(message);
 
 type RoundResult = 'p1' | 'p2' | 'tie';
 
@@ -133,50 +154,51 @@ export const handleRockPaperScissorsHostActionCallRoundWinner = (
   if (roundResult === 'p1') {
     return {
       updatedGameState,
-      watcherSummary: toPublicOutcome(`Player 1 wins the round with ${gameState.p1Choice} over ${gameState.p2Choice}.`),
-      playerSeatSummaries: buildPlayerSeatSummaries(
-        'p1',
-        `You win the round with ${gameState.p1Choice}.`,
-        `Player 1 wins the round with ${gameState.p1Choice}.`
-      ),
-      hostSummary: toHostOutcome(`Round result: Player 1 wins with ${gameState.p1Choice} over ${gameState.p2Choice}.`),
-      nextActions: null,
+      // watcherSummary: toPublicOutcome(`Player 1 wins the round with ${gameState.p1Choice} over ${gameState.p2Choice}.`),
+      // playerSeatSummaries: buildPlayerSeatSummaries(
+      //   'p1' as GameTableSeatId,
+      //   `You win the round with ${gameState.p1Choice}.`,
+      //   `Player 1 wins the round with ${gameState.p1Choice}.`
+      // ),
+      // hostSummary: toHostOutcome(`Round result: Player 1 wins with ${gameState.p1Choice} over ${gameState.p2Choice}.`),
+      // nextActions: null,
     } as RockPaperScissorsBfgGameSpecificHostActionOutcome;
   }
 
   if (roundResult === 'p2') {
     return {
       updatedGameState,
-      watcherSummary: toPublicOutcome(`Player 2 wins the round with ${gameState.p2Choice} over ${gameState.p1Choice}.`),
-      playerSeatSummaries: buildPlayerSeatSummaries(
-        'p2',
-        `You win the round with ${gameState.p2Choice}.`,
-        `Player 2 wins the round with ${gameState.p2Choice}.`
-      ),
-      hostSummary: toHostOutcome(`Round result: Player 2 wins with ${gameState.p2Choice} over ${gameState.p1Choice}.`),
-      nextActions: null,
+      // watcherSummary: toPublicOutcome(`Player 2 wins the round with ${gameState.p2Choice} over ${gameState.p1Choice}.`),
+      // playerSeatSummaries: buildPlayerSeatSummaries(
+      //   'p2' as GameTableSeatId,
+      //   `You win the round with ${gameState.p2Choice}.`,
+      //   `Player 2 wins the round with ${gameState.p2Choice}.`
+      // ),
+      // hostSummary: toHostOutcome(`Round result: Player 2 wins with ${gameState.p2Choice} over ${gameState.p1Choice}.`),
+      // nextActions: null,
     } as RockPaperScissorsBfgGameSpecificHostActionOutcome;
   }
 
   return {
     updatedGameState,
-    watcherSummary: toPublicOutcome(`Round ends in a tie. Both players chose ${gameState.p1Choice}.`),
-    playerSeatSummaries: buildPlayerSeatSummaries(
-      'p1',
-      `Round ties. Both players revealed ${gameState.p1Choice}.`,
-      `Round ties. Both players revealed ${gameState.p1Choice}.`
-    ),
-    hostSummary: toHostOutcome(`Round result: tie with both players showing ${gameState.p1Choice}.`),
-    nextActions: null,
+    // watcherSummary: toPublicOutcome(`Round ends in a tie. Both players chose ${gameState.p1Choice}.`),
+    // playerSeatSummaries: buildPlayerSeatSummaries(
+    //   'p1' as GameTableSeatId,
+    //   `Round ties. Both players revealed ${gameState.p1Choice}.`,
+    //   `Round ties. Both players revealed ${gameState.p1Choice}.`
+    // ),
+    // hostSummary: toHostOutcome(`Round result: tie with both players showing ${gameState.p1Choice}.`),
+    // nextActions: null,
   } as RockPaperScissorsBfgGameSpecificHostActionOutcome;
 };
+
 
 export const handleRockPaperScissorsHostActionCallGameWinner = (
   _tableState: GameTable,
   gameState: RockPaperScissorsHostGameState,
   _hostAction: RockPaperScissorsHostActionCallGameWinner
 ): RockPaperScissorsBfgGameSpecificHostActionOutcome => {
-  let watcherSummary: BfgGameActionPublicOutcomeStr;
+  let watcherSummary: BfgGameActionWatcherOutcomeStr;
   let hostSummary: BfgGameActionHostOutcomeStr;
 
   if (gameState.p1WinCount > gameState.p2WinCount) {
@@ -202,8 +224,10 @@ export const handleRockPaperScissorsHostActionCallGameWinner = (
     );
   }
 
-  const playerSeatSummaries = buildPlayerSeatSummaries(
-    gameState.p1WinCount >= gameState.p2WinCount ? 'p1' : 'p2',
+  const playerSeatSummaries: RpsPlayerSeatSummaries = buildPlayerSeatSummaries(
+    gameState.p1WinCount >= gameState.p2WinCount ? 
+      'p1' as GameTableSeatId :
+      'p2' as GameTableSeatId,
     gameState.p1WinCount === gameState.p2WinCount
       ? 'Game ends in a tie.'
       : 'You are declared the game winner!',
@@ -218,10 +242,10 @@ export const handleRockPaperScissorsHostActionCallGameWinner = (
 
   return {
     updatedGameState: gameState,
-    watcherSummary,
-    playerSeatSummaries,
-    hostSummary,
-    nextActions: null,
+    // watcherSummary,
+    // playerSeatSummaries,
+    // hostSummary,
+    // nextActions: null,
   } as RockPaperScissorsBfgGameSpecificHostActionOutcome;
 };
 

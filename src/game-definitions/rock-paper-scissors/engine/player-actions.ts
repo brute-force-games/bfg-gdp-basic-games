@@ -1,26 +1,31 @@
 import z from "zod";
-import { BfgGameActionByPlayerSchema, BfgGameActionHostOutcomeStrSchema, BfgGameActionPlayerOutcomeStrSchema, BfgGameActionPublicOutcomeStrSchema } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
+// import { BfgGameActionByPlayerSchema, BfgGameActionHostOutcomeStrSchema, BfgGameActionPlayerOutcomeStrSchema, BfgGameActionPublicOutcomeStrSchema } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
 import { ROCK_PAPER_SCISSORS_PLAYER_ACTION_SET_HAND, RockPaperScissorsPlayerChoiceSchema, ROCK_PAPER_SCISSORS_PLAYER_ACTION_CONCEDE } from "./action-types";
-import { createPlayerActionDefinition, type PlayerActionDefinition } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-definition-types";
+// import { createPlayerActionDefinition, type PlayerActionDefinition } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-definition-types";
 import type { RockPaperScissorsBfgGameSpecificPlayerActionOutcome, RockPaperScissorsHostGameState } from "../rock-paper-scissors-types";
-import type { GameTable } from "../../../../../bfg-engine/src/models/game-table/game-table";
-import { ALL_PLAYER_SEATS } from "../../../../../bfg-engine/src/models/game-table/game-table";
-import type { BfgGameActionHostOutcomeStr, BfgGameActionPlayerOutcomeStr, BfgGameActionPublicOutcomeStr } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
-
+import type { GameTable } from '@bfg-engine/models/game-table/game-table';
+// import { ALL_PLAYER_SEATS } from "../../../../../bfg-engine/src/models/game-table/game-table";
+// import type { BfgGameActionHostOutcomeStr, BfgGameActionPlayerOutcomeStr, BfgGameActionPublicOutcomeStr } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
+import { BfgGameActionByPlayerSchema } from '@bfg-engine/game-metadata/metadata-types/game-action-types';
+import type { GameTableSeatId } from '@bfg-engine/models/types/bfg-branded-ids';
+import { BfgGameActionHostOutcomeStrToolbox, BfgGameActionWatcherOutcomeStrToolbox } from "@bfg-engine/models/types/bfg-branded-string-types";
+import type { BfgGameActionHostOutcomeStr, BfgGameActionPlayerOutcomeStr, BfgGameActionWatcherOutcomeStr } from "@bfg-engine/models/types/bfg-branded-string-types";
+import type { RpsPlayerSeatSummaries } from "../rock-paper-scissors-types";
+// import type { BfgGameActionPlayerOutcomeStr } from "../../../../../bfg-engine/src/models/types/bfg-branded-string-utils";
 
 
 // Player action to ask another player for cards
 export const RockPaperScissorsPlayerActionSetHandSchema = BfgGameActionByPlayerSchema.extend({
   actionType: z.literal(ROCK_PAPER_SCISSORS_PLAYER_ACTION_SET_HAND),
   choice: RockPaperScissorsPlayerChoiceSchema,
-});
+}).describe('RockPaperScissorsPlayerActionSetHand');
 
 export type RockPaperScissorsPlayerActionSetHand = z.infer<typeof RockPaperScissorsPlayerActionSetHandSchema>;
 
 
 export const RockPaperScissorsPlayerActionConcedeSchema = BfgGameActionByPlayerSchema.extend({
   actionType: z.literal(ROCK_PAPER_SCISSORS_PLAYER_ACTION_CONCEDE),
-});
+}).describe('RockPaperScissorsPlayerActionConcede');
 
 export type RockPaperScissorsPlayerActionConcede = z.infer<typeof RockPaperScissorsPlayerActionConcedeSchema>;
 
@@ -39,19 +44,28 @@ export type AnyRockPaperScissorsPlayerAction = z.infer<typeof AnyRockPaperScisso
 
 
 export const buildPlayerSeatSummaries = (
-  activeSeat: typeof ALL_PLAYER_SEATS[number],
-  activeSeatMessage: string,
-  otherSeatMessage: string
-) => {
-  return ALL_PLAYER_SEATS.reduce<Record<typeof ALL_PLAYER_SEATS[number], BfgGameActionPlayerOutcomeStr>>((acc, seat) => {
-    const summary = seat === activeSeat ? activeSeatMessage : otherSeatMessage;
-    acc[seat] = BfgGameActionPlayerOutcomeStrSchema.parse(summary);
-    return acc;
-  }, {} as Record<typeof ALL_PLAYER_SEATS[number], BfgGameActionPlayerOutcomeStr>);
+  _activeSeat: GameTableSeatId,
+  p1Message: BfgGameActionPlayerOutcomeStr,
+  p2Message: BfgGameActionPlayerOutcomeStr
+): RpsPlayerSeatSummaries => {
+  const retVal: RpsPlayerSeatSummaries = {
+    p1: p1Message,
+    p2: p2Message,
+  };
+  return retVal;
+
+  // return ALL_PLAYER_SEATS.reduce<RpsPlayerSeatSummaries>((acc, seat) => {
+  //   const summary = seat === activeSeat ? activeSeatMessage : otherSeatMessage;
+  //   acc[seat] = summary;
+  //   return acc;
+  // }, {} as RpsPlayerSeatSummaries);
 };
 
-const toPublicOutcome = (message: string): BfgGameActionPublicOutcomeStr => BfgGameActionPublicOutcomeStrSchema.parse(message);
-const toHostOutcome = (message: string): BfgGameActionHostOutcomeStr => BfgGameActionHostOutcomeStrSchema.parse(message);
+const toWatcherOutcome = (message: string): BfgGameActionWatcherOutcomeStr => 
+  BfgGameActionWatcherOutcomeStrToolbox.createBrandedString(message);
+
+const toHostOutcome = (message: string): BfgGameActionHostOutcomeStr => 
+  BfgGameActionHostOutcomeStrToolbox.createBrandedString(message);
 
 
 export const handleRockPaperScissorsPlayerActionSetHand = async (
@@ -76,17 +90,23 @@ export const handleRockPaperScissorsPlayerActionSetHand = async (
       : {}),
   };
 
-  return {
+  const watcherSummary = toWatcherOutcome(`Player ${playerSeat} locked in a hand.`);
+  const hostSummary = toHostOutcome(`Player ${playerSeat} set hand: ${playerAction.choice}`);
+  const playerSeatSummaries = buildPlayerSeatSummaries(
+    playerSeat,
+    toWatcherOutcome(`You locked in ${playerAction.choice}.`),
+    toWatcherOutcome(`Player ${playerSeat} locked in a hand.`)
+  );
+
+  const retVal: RockPaperScissorsBfgGameSpecificPlayerActionOutcome = {
     updatedGameState,
-    watcherSummary: toPublicOutcome(`Player ${playerSeat} locked in a hand.`),
-    playerSeatSummaries: buildPlayerSeatSummaries(
-      playerSeat,
-      `You locked in ${playerAction.choice}.`,
-      `Player ${playerSeat} locked in a hand.`
-    ),
-    hostSummary: toHostOutcome(`Player ${playerSeat} set hand: ${playerAction.choice}`),
+    watcherSummary,
+    playerSeatSummaries,
+    hostSummary,
     nextActions: null,
   };
+
+  return retVal;
 };
 
 export const handleRockPaperScissorsPlayerActionConcede = async (
@@ -96,17 +116,23 @@ export const handleRockPaperScissorsPlayerActionConcede = async (
 ): Promise<RockPaperScissorsBfgGameSpecificPlayerActionOutcome> => {
   const playerSeat = playerAction.playerSeat;
 
-  return {
+  const watcherSummary = toWatcherOutcome(`Player ${playerSeat} conceded.`);
+  const hostSummary = toHostOutcome(`Player ${playerSeat} conceded.`);
+  const playerSeatSummaries = buildPlayerSeatSummaries(
+    playerSeat,
+    toWatcherOutcome("You conceded the game."),
+    toWatcherOutcome(`Player ${playerSeat} conceded the game.`)
+  );
+
+  const retVal: RockPaperScissorsBfgGameSpecificPlayerActionOutcome = {
     updatedGameState: gameState,
-    watcherSummary: toPublicOutcome(`Player ${playerSeat} conceded.`),
-    playerSeatSummaries: buildPlayerSeatSummaries(
-      playerSeat,
-      "You conceded the game.",
-      `Player ${playerSeat} conceded the game.`
-    ),
-    hostSummary: toHostOutcome(`Player ${playerSeat} conceded.`),
+    watcherSummary,
+    playerSeatSummaries,
+    hostSummary,
     nextActions: null,
   };
+
+  return retVal;
 };
 
 
@@ -132,29 +158,35 @@ export const handleRockPaperScissorsPlayerActionConcede = async (
 // }
 
 
-const RockPaperScissorsPlayerActionSetHandDefinition = createPlayerActionDefinition<
-  RockPaperScissorsHostGameState,
-  // RockPaperScissorsPlayerActionSetHandSchema,
-  RockPaperScissorsBfgGameSpecificPlayerActionOutcome
->(
-  RockPaperScissorsPlayerActionSetHandSchema,
-  async (_tableState, gameState, _action) => gameState,
-  async (tableState, gameState, action) =>
-    handleRockPaperScissorsPlayerActionSetHand(tableState, gameState, action as RockPaperScissorsPlayerActionSetHand)
-);
+// const RockPaperScissorsPlayerActionSetHandDefinition = createPlayerActionDefinition<
+//   RockPaperScissorsHostGameState,
+//   // RockPaperScissorsPlayerActionSetHandSchema,
+//   RockPaperScissorsBfgGameSpecificPlayerActionOutcome
+// >(
+//   RockPaperScissorsPlayerActionSetHandSchema,
+//   async (_tableState, gameState, _action) => gameState,
+//   async (tableState, gameState, action) =>
+//     handleRockPaperScissorsPlayerActionSetHand(tableState, gameState, action as RockPaperScissorsPlayerActionSetHand)
+// );
 
 
-const RockPaperScissorsPlayerActionConcedeDefinition = createPlayerActionDefinition<
-  RockPaperScissorsHostGameState,
-  // RockPaperScissorsPlayerActionConcede,
-  RockPaperScissorsBfgGameSpecificPlayerActionOutcome
-  // RockPaperScissorsPlayerActionConcede
->(
-  RockPaperScissorsPlayerActionConcedeSchema,
-  async (_tableState, gameState, _action) => gameState,
-  async (tableState, gameState, action) =>
-    handleRockPaperScissorsPlayerActionConcede(tableState, gameState, action as RockPaperScissorsPlayerActionConcede)
-);
+// const RockPaperScissorsPlayerActionConcedeDefinition = createPlayerActionDefinition<
+//   RockPaperScissorsHostGameState,
+//   // RockPaperScissorsPlayerActionConcede,
+//   RockPaperScissorsBfgGameSpecificPlayerActionOutcome
+//   // RockPaperScissorsPlayerActionConcede
+// >(
+//   RockPaperScissorsPlayerActionConcedeSchema,
+//   async (_tableState, gameState, _action) => gameState,
+//   async (tableState, gameState, action) =>
+//     handleRockPaperScissorsPlayerActionConcede(tableState, gameState, action as RockPaperScissorsPlayerActionConcede)
+// );
+
+// const RockPaperScissorsPlayerActionConcede = BfgGameActionByPlayerSchema.extend({
+//   actionType: z.literal(ROCK_PAPER_SCISSORS_PLAYER_ACTION_CONCEDE),
+// }).describe('RockPaperScissorsPlayerActionConcede');
+
+// export type RockPaperScissorsPlayerActionConcede = z.infer<typeof RockPaperScissorsPlayerActionConcede>;
 
 
 // export const RockPaperScissorsPlayerActionDefinitions: ReadonlyArray<PlayerActionDefinition>
@@ -166,15 +198,17 @@ const RockPaperScissorsPlayerActionConcedeDefinition = createPlayerActionDefinit
 //   RockPaperScissorsPlayerActionConcedeDefinition,
 // ];
 
-export const RockPaperScissorsPlayerActionDefinitions: ReadonlyArray<
-  PlayerActionDefinition<
-    RockPaperScissorsHostGameState,
-    RockPaperScissorsBfgGameSpecificPlayerActionOutcome
-  >
-> = [
-  RockPaperScissorsPlayerActionSetHandDefinition,
-  RockPaperScissorsPlayerActionConcedeDefinition,
-] as const;
+// export const RockPaperScissorsPlayerActionDefinitions: ReadonlyArray<
+//   PlayerActionDefinition<
+//     RockPaperScissorsHostGameState,
+//     RockPaperScissorsBfgGameSpecificPlayerActionOutcome
+//   >
+// > = [
+//   RockPaperScissorsPlayerActionSetHandDefinition,
+//   RockPaperScissorsPlayerActionConcedeDefinition,
+// ] as const;
+
+
 
 
 // export const createPlayerActionDefinitions = () => {

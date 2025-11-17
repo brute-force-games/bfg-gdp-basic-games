@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BfgGameStateForHostSchema, BfgGameStateForPlayerSchema, BfgGameStateForWatcherSchema } from "../../../../bfg-engine/src/game-metadata/metadata-types/game-state-types";
+import { BfgGameStateForHostSchema, BfgGameStateForPlayerSchema, BfgGameStateForWatcherSchema } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import {
   RockPaperScissorsPlayerShowingSchema,
   RockPaperScissorsPlayerChoiceSchema,
@@ -9,9 +9,10 @@ import { RockPaperScissorsPlayerActionSetHandSchema, RockPaperScissorsPlayerActi
 import {
   BfgGameActionByHostSchema,
   BfgGameActionByPlayerSchema,
-  BfgGameSpecificHostActionOutcomeSchema,
-  BfgGameSpecificPlayerActionOutcomeSchema,
-} from "../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
+  BfgGameEventOutcomeSchema,
+  BfgGameEventSchema,
+} from "@bfg-engine/game-metadata/metadata-types/game-action-types";
+import { BfgGameActionHostOutcomeStrToolbox, BfgGameActionPlayerOutcomeStrToolbox, BfgGameActionWatcherOutcomeStrToolbox } from "../../../../bfg-engine/src/models/types/bfg-branded-string-types";
 
 
 // Game resolution states
@@ -191,19 +192,51 @@ export const RockPaperScissorsHostGameStateSchema = BfgGameStateForHostSchema.ex
   p1WinCount: z.number(),
   p2WinCount: z.number(),
   tieCount: z.number(),
+  
 }).describe('RockPaperScissorsHostGameState');
 
 export type RockPaperScissorsHostGameState = z.infer<typeof RockPaperScissorsHostGameStateSchema>;
 
 
 
-export const RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema = BfgGameSpecificPlayerActionOutcomeSchema.extend({
-  updatedGameState: RockPaperScissorsHostGameStateSchema,
+export const RpsPlayerSeatSummariesSchema = z.object({
+  p1: BfgGameActionPlayerOutcomeStrToolbox.schema,
+  p2: BfgGameActionPlayerOutcomeStrToolbox.schema,
 });
-export type RockPaperScissorsBfgGameSpecificPlayerActionOutcome = z.infer<typeof RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema>;
+
+export type RpsPlayerSeatSummaries = z.infer<typeof RpsPlayerSeatSummariesSchema>;
 
 
-export const RockPaperScissorsBfgGameSpecificHostActionOutcomeSchema = BfgGameSpecificHostActionOutcomeSchema.extend({
+// export const RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema = z.object({
+//   updatedGameState: RockPaperScissorsHostGameStateSchema,
+//   watcherSummary: BfgGameActionWatcherOutcomeStrToolbox.schema,
+//   playerSeatSummaries: RpsPlayerSeatSummariesSchema,
+//   hostSummary: BfgGameActionHostOutcomeStrToolbox.schema,
+//   nextActions: z.null(),
+// });
+// export type RockPaperScissorsBfgGameSpecificPlayerActionOutcome = z.infer<typeof RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema>;
+
+export const RockPaperScissorsGameEventSchema = BfgGameEventSchema.extend({
+  // updatedGameState: RockPaperScissorsHostGameStateSchema,
+  // watcherSummary: BfgGameActionWatcherOutcomeStrToolbox.schema,
+  // playerSeatSummaries: RpsPlayerSeatSummariesSchema,
+  // hostSummary: BfgGameActionHostOutcomeStrToolbox.schema,
+  // nextActions: z.null(),
+}).describe('RockPaperScissorsGameEvent');
+export type RockPaperScissorsGameEvent = z.infer<typeof RockPaperScissorsGameEventSchema>;
+
+
+export const RockPaperScissorsGameEventOutcomeSchema = BfgGameEventOutcomeSchema.extend({
+  updatedGameState: RockPaperScissorsHostGameStateSchema,
+  watcherSummary: BfgGameActionWatcherOutcomeStrToolbox.schema,
+  playerSeatSummaries: RpsPlayerSeatSummariesSchema,
+  hostSummary: BfgGameActionHostOutcomeStrToolbox.schema,
+  nextActions: z.null(),
+}).describe('RockPaperScissorsGameEventOutcome');
+export type RockPaperScissorsGameEventOutcome = z.infer<typeof RockPaperScissorsGameEventOutcomeSchema>;
+
+
+export const RockPaperScissorsBfgGameSpecificHostActionOutcomeSchema = BfgGameActionByHostSchema.extend({
   updatedGameState: RockPaperScissorsHostGameStateSchema,
 });
 export type RockPaperScissorsBfgGameSpecificHostActionOutcome = z.infer<typeof RockPaperScissorsBfgGameSpecificHostActionOutcomeSchema>;

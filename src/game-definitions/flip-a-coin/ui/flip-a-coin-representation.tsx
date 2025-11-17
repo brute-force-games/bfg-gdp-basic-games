@@ -1,4 +1,4 @@
-import { GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+import { GameTableSeat } from "@bfg-engine/models/game-table/game-room-p2p";
 import { FlipACoinPlayerAction, FlipACoinGameState, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
 import { Box, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 

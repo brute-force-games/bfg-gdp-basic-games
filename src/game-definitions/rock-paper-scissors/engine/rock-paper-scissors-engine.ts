@@ -1,13 +1,16 @@
+import { z } from "zod";
 import { BfgSupportedGameTitle } from "@bfg-engine";
-import { GameTableSeat, type GameTable } from "@bfg-engine/models/game-table/game-table";
+// import { GameTableSeat, type GameTable } from "@bfg-engine/models/game-table/game-table";
 import type { RockPaperScissorsHostAction, RockPaperScissorsHostGameState } from "../rock-paper-scissors-types";
-import type { BfgGameSpecificTableAction, DbGameTableAction } from "../../../../../bfg-engine/src/models/game-table/game-table-action";
+// import type { BfgGameSpecificTableAction, DbGameTableAction } from "../../../../../bfg-engine/src/models/game-table/game-table-action";
 import { ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME } from "./action-types";
 import type { GameLobby } from "../../../../../bfg-engine/src/models/p2p-lobby";
-import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { BfgGameActionByHostSchema } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
-import { z } from "zod";
-import type { IBfgGameProcessor } from "@bfg-engine/game-metadata/metadata-types";
+// import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-uuids";
+import { BfgGameActionByHostSchema, type BfgGameActionByHost } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
+import type { GameRoomP2p, GameTableSeat } from "../../../../../bfg-engine/src/models/game-table/game-room-p2p";
+import type { IBfgGameProcessor } from "../../../../../bfg-engine/src/game-metadata/factories/complete-game-processor-factory";
+import type { GameTable } from "../../../../../bfg-engine/src/models/game-table/game-table";
+// import type { IBfgGameProcessor } from "@bfg-engine/game-metadata/metadata-types";
 
 
 export const RockPaperScissorsGameName = 'Rock Paper Scissors' as BfgSupportedGameTitle;
@@ -623,7 +626,7 @@ export const RockPaperScissorsGameName = 'Rock Paper Scissors' as BfgSupportedGa
 // export const GoFishGameProcessor = goFishProcessorImplementation;
 
 // Helper function to get current player
-export const getNextToActPlayers = (_gameTable: GameTable, _gameState: RockPaperScissorsHostGameState): GameTableSeat[] => {
+export const getNextToActPlayers = (_gameTable: GameRoomP2p, _gameState: RockPaperScissorsHostGameState): GameTableSeat[] => {
   // return gameState.currentPlayerSeat;
   throw new Error('Not implemented');
 };
@@ -662,15 +665,10 @@ export const getNextToActPlayers = (_gameTable: GameTable, _gameState: RockPaper
 // };
 
 
-const createInitialRockPaperScissorsGameAction = (_gameTable: GameTable, _lobbyState: GameLobby): BfgGameSpecificTableAction<RockPaperScissorsHostAction> => {
-  const retVal: BfgGameSpecificTableAction<RockPaperScissorsHostAction> = {
-    gameSpecificAction: {
-      source: 'host',
-      actionType: ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME,
-    },
-    source: 'game-table-action-source-host',
-    actionType: 'game-table-action-host-starts-game',
-    gameTableActionId: BfgGameTableActionId.createId(),
+const createInitialRockPaperScissorsGameAction = (_gameRoom: GameRoomP2p, _lobbyState: GameLobby): RockPaperScissorsHostAction => {
+  const retVal: RockPaperScissorsHostAction = {
+    source: 'host',
+    hostActionType: ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME,
   };
 
   return retVal;
@@ -678,7 +676,7 @@ const createInitialRockPaperScissorsGameAction = (_gameTable: GameTable, _lobbyS
 
 const createInitialRockPaperScissorsGameState = (
   _gameTable: GameTable,
-  _gameSpecificInitialAction: BfgGameSpecificTableAction<z.infer<typeof BfgGameActionByHostSchema>>,
+  _gameSpecificInitialAction: RockPaperScissorsHostAction,
 ): RockPaperScissorsHostGameState => {
   return {
     p1Showing: 'hidden',
@@ -709,7 +707,7 @@ const getPlayerDetailsLine = (gameState: RockPaperScissorsHostGameState, playerS
 //   };
 // };
 
-const summarizeRockPaperScissorsGameAction = (gameAction: DbGameTableAction): string => {
+const summarizeRockPaperScissorsGameAction = (gameAction: BfgGameAction): string => {
   return `Rock Paper Scissors game action: ${gameAction.actionType}`;
 };
 
@@ -722,7 +720,7 @@ export const RockPaperScissorsGameActionProcessor = {
   getPlayerDetailsLine: getPlayerDetailsLine,
   // getAllPlayersPrivateKnowledge: getAllPlayersPrivateKnowledge,
   summarizeGameAction: summarizeRockPaperScissorsGameAction,
-} as IBfgGameProcessor<RockPaperScissorsHostGameState, RockPaperScissorsHostAction>;
+} as IBfgGameProcessor;
 
 
 // export const RockPaperScissorsGameProcessor = createCompleteGameProcessor(
@@ -732,10 +730,10 @@ export const RockPaperScissorsGameActionProcessor = {
 
 
 
-export const RockPaperScissorsCompleteGameProcessor: IBfgGameProcessor<
-  RockPaperScissorsHostGameState,
-  RockPaperScissorsHostAction
-> = {
+export const RockPaperScissorsCompleteGameProcessor: IBfgGameProcessor
+  // RockPaperScissorsHostGameState,
+  // RockPaperScissorsHostAction
+= {
   createGameSpecificInitialAction: createInitialRockPaperScissorsGameAction,
   createGameSpecificInitialState: createInitialRockPaperScissorsGameState,
 

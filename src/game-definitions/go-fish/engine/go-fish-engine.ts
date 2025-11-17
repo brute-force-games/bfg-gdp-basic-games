@@ -1,8 +1,8 @@
-import { BfgSupportedGameTitle } from "@bfg-engine";
-import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-ids";
-import { GameTable, GameTableSeat, GameTableSeatSchema } from "@bfg-engine/models/game-table/game-table";
-import { GameTableActionResult, TABLE_PHASE_ERROR, TABLE_PHASE_GAME_COMPLETE_NO_WINNERS, TABLE_PHASE_GAME_COMPLETE_WITH_WINNERS, TABLE_PHASE_GAME_IN_PROGRESS } from "@bfg-engine/models/game-table/table-phase";
-import { BfgGameSpecificTableAction, DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
+import { BfgSupportedGameTitle, GameTableSeatSchema } from "@bfg-engine";
+// import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-ids";
+// import { GameTable, GameTableSeat, GameTableSeatSchema } from "@bfg-engine/models/game-table/game-table";
+// import { GameTableActionResult, TABLE_PHASE_ERROR, TABLE_PHASE_GAME_COMPLETE_NO_WINNERS, TABLE_PHASE_GAME_COMPLETE_WITH_WINNERS, TABLE_PHASE_GAME_IN_PROGRESS } from "@bfg-engine/models/game-table/table-phase";
+// import { BfgGameSpecificTableAction, DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 import {
@@ -22,12 +22,15 @@ import {
   GO_FISH_HOST_ACTION_OUTCOME_STARTS_GAME,
   GO_FISH_PLAYER_ACTION_DRAW_CARD
 } from "../go-fish-types";
-import { IBfgGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
+// import { IBfgGameProcessor } from "@bfg-engine/models/game-engine/bfg-game-engine-processor";
 import { PlayingCard, CardRank } from "@bfg-engine/game-stock/std-card-games/types";
 import { removeCardsFromHand, getCardsOfRank } from "./engine-utils";
 import { createShuffledDeck } from "@bfg-engine/game-stock/std-card-games/factories";
 import { isHostActionSource, isPlayerActionSource } from "@bfg-engine/models/game-table/utils";
-import { GoFishHostActionEncoder, GoFishPlayerActionEncoder, GoFishPlayerActionOutcomeEncoder } from "./encoders";
+import type { IBfgGameProcessor } from "../../../../../bfg-engine/src/game-metadata/factories/complete-game-processor-factory";
+import type { GameTableSeat } from "../../../../../bfg-engine/src/models/game-table/game-room-p2p";
+import type { GameTable } from "../../../../../bfg-engine/src/models/game-table/game-table";
+// import { GoFishHostActionEncoder, GoFishPlayerActionEncoder, GoFishPlayerActionOutcomeEncoder } from "./encoders";
 
 
 export const GoFishGameName = 'Go Fish' as BfgSupportedGameTitle;

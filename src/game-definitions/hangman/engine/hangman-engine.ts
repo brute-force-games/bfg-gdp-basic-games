@@ -1,14 +1,16 @@
 import { z } from "zod";
 import { getWordInfoFromInternalWordList } from "./hangman-engine-utils";
 import { BfgSupportedGameTitle, GameTableSeatSchema } from "@bfg-engine";
-import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
-import { GameTableActionResult } from "@bfg-engine/models/game-table/table-phase";
-import { BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
-import type { DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
+// import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-uuids";
+// import { GameTable, GameTableSeat } from "@bfg-engine/models/game-table/game-table";
+// import { GameTableActionResult } from "@bfg-engine/models/game-table/table-phase";
+// import { BfgGameSpecificTableAction } from "@bfg-engine/models/game-table/game-table-action";
+// import type { DbGameTableAction } from "@bfg-engine/models/game-table/game-table-action";
 import { BfgGameImplHostActionSchema } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
-import type { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/game-metadata/metadata-types";
+import { BfgGameActionByPlayerSchema } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
+import { BfgGameStateForHostSchema } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-state-types";
+// import type { IBfgAllPublicKnowledgeGameProcessor } from "@bfg-engine/game-metadata/metadata-types";
 
 export const HangmanGameName = 'Hangman' as BfgSupportedGameTitle;
 
@@ -84,8 +86,8 @@ export const HangmanSetupGameSchema = BfgGameImplHostActionSchema.extend({
 export type HangmanSetupGame = z.infer<typeof HangmanSetupGameSchema>;
 
 
-export const HangmanPlayerPicksHiddenWordSchema = BfgGameImplPlayerActionSchema.extend({
-  playerActionType: z.literal(HANGMAN_PLAYER_ACTION_PICKS_HIDDEN_WORD),
+export const HangmanPlayerPicksHiddenWordSchema = BfgGameActionByPlayerSchema.extend({
+  actionType: z.literal(HANGMAN_PLAYER_ACTION_PICKS_HIDDEN_WORD),
   hiddenWordInfo: HiddenWordInfoSchema,
   playerSeat: GameTableSeatSchema,
 })
@@ -93,8 +95,8 @@ export const HangmanPlayerPicksHiddenWordSchema = BfgGameImplPlayerActionSchema.
 export type HangmanPlayerPicksHiddenWord = z.infer<typeof HangmanPlayerPicksHiddenWordSchema>;
 
 
-export const HangmanPlayerGuessLetterSchema = BfgGameImplPlayerActionSchema.extend({
-  playerActionType: z.literal(HANGMAN_PLAYER_ACTION_GUESS_LETTER),
+export const HangmanPlayerGuessLetterSchema = BfgGameActionByPlayerSchema.extend({
+  actionType: z.literal(HANGMAN_PLAYER_ACTION_GUESS_LETTER),
   guess: LetterChoiceSchema,
   playerSeat: GameTableSeatSchema,
 })
@@ -102,8 +104,8 @@ export const HangmanPlayerGuessLetterSchema = BfgGameImplPlayerActionSchema.exte
 export type HangmanPlayerGuessLetter = z.infer<typeof HangmanPlayerGuessLetterSchema>;
 
 
-export const HangmanPlayerCancelGameSchema = BfgGameImplPlayerActionSchema.extend({
-  playerActionType: z.literal(HANGMAN_PLAYER_ACTION_CANCEL_GAME),
+export const HangmanPlayerCancelGameSchema = BfgGameActionByPlayerSchema.extend({
+  actionType: z.literal(HANGMAN_PLAYER_ACTION_CANCEL_GAME),
   cancellationReason: z.string(),
   playerSeat: GameTableSeatSchema,
 })
@@ -182,11 +184,11 @@ export type HangmanGameAction = z.infer<typeof HangmanGameActionSchema>;
 
 
 export const PlayerStateSchema = z.object({
-  lettersGuessed: z.array(LetterChoiceSchema),
+  lettersGuessed: z.array(LetterChoiceSchema).default([]),
 })
 
 
-export const HangmanGameStateSchema = BfgGameSpecificGameStateSchema.extend({
+export const HangmanGameStateSchema = BfgGameStateForHostSchema.extend({
   isGameOver: z.boolean(),
   outcomeSummary: z.string().optional(),
 
@@ -203,16 +205,16 @@ export const HangmanGameStateSchema = BfgGameSpecificGameStateSchema.extend({
   
   playerStates: z.record(GameTableSeatSchema, PlayerStateSchema)
     .optional()
-    .default({
-      'p1': { lettersGuessed: [], },
-      'p2': { lettersGuessed: [], },
-      'p3': { lettersGuessed: [], },
-      'p4': { lettersGuessed: [], },
-      'p5': { lettersGuessed: [], },
-      'p6': { lettersGuessed: [], },
-      'p7': { lettersGuessed: [], },
-      'p8': { lettersGuessed: [], },
-    }),
+    // .default({
+    //   'p1': { lettersGuessed: [], },
+    //   'p2': { lettersGuessed: [], },
+    //   'p3': { lettersGuessed: [], },
+    //   'p4': { lettersGuessed: [], },
+    //   'p5': { lettersGuessed: [], },
+    //   'p6': { lettersGuessed: [], },
+    //   'p7': { lettersGuessed: [], },
+    //   'p8': { lettersGuessed: [], },
+    // }),
 }).describe('Hangman');
 
 export type HangmanGameState = z.infer<typeof HangmanGameStateSchema>;

@@ -1,31 +1,30 @@
 import { FlipACoinPlayerAction, FlipACoinGameState } from "../../engine/flip-a-coin-engine";
 import { FlipACoinRepresentation } from "../flip-a-coin-representation";
 import { FlipACoinInput } from "../flip-a-coin-input";
-import { PlayerComponentProps } from "@bfg-engine/models/game-engine/bfg-game-engine-types";
-import { convertFromDbGameTableActionToGameSpecificAction } from "../../engine/engine-utils";
+import { PlayerComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
 import { Box, Stack } from "@bfg-engine/ui/bfg-ui";
+import type { BfgGameStateForPlayer } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 
 
 export const FlipACoinPlayerComponent = (
-  props: PlayerComponentProps<FlipACoinGameState, FlipACoinPlayerAction, null>
+  props: PlayerComponentProps<BfgGameStateForPlayer>
 ) => {
-  const { currentPlayerSeat, gameState, latestGameAction, onPlayerAction } = props;
+  const { currentPlayerSeat, gameState, latestPlayerGameEvent, onPlayerAction } = props;
 
-  const mostRecentAction = latestGameAction !== null ?
-    convertFromDbGameTableActionToGameSpecificAction(latestGameAction) :
-    null;
+  const typedGameState = gameState as unknown as FlipACoinGameState;
+  const mostRecentAction = latestPlayerGameEvent?.event as FlipACoinPlayerAction | undefined || null;
 
   return (
     <Box>
       <Stack spacing={3}>
         <FlipACoinRepresentation 
           myPlayerSeat={currentPlayerSeat} 
-          gameState={gameState} 
+          gameState={typedGameState} 
           mostRecentAction={mostRecentAction}
         />
         <FlipACoinInput 
           myPlayerSeat={currentPlayerSeat} 
-          gameState={gameState} 
+          gameState={typedGameState} 
           mostRecentAction={mostRecentAction}
           onGameAction={onPlayerAction}
         />
