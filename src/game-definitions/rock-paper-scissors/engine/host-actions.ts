@@ -7,7 +7,6 @@ import type { GameTable } from '@bfg-engine/models/game-table/game-table';
 import { buildPlayerSeatSummaries } from './player-actions';
 import { BfgGameActionByHostSchema } from '@bfg-engine/game-metadata/metadata-types/game-action-types';
 import type { GameTableSeatId } from '@bfg-engine/models/types/bfg-branded-ids';
-import { BfgGameActionHostOutcomeStrToolbox, BfgGameActionWatcherOutcomeStrToolbox, type BfgGameActionHostOutcomeStr, type BfgGameActionWatcherOutcomeStr } from '@bfg-engine/models/types/bfg-branded-string-types';
 
 
 export const RockPaperScissorsHostActionStartGameSchema = BfgGameActionByHostSchema.extend({
@@ -108,11 +107,11 @@ export const handleRockPaperScissorsHostActionStartGame = (
   // } as RockPaperScissorsBfgGameSpecificHostActionOutcome;
 };
 
-const toPublicOutcome = (message: string): BfgGameActionWatcherOutcomeStr =>
-  BfgGameActionWatcherOutcomeStrToolbox.createBrandedString(message);
+// const toPublicOutcome = (message: string): BfgGameActionWatcherOutcomeStr =>
+//   BfgGameActionWatcherOutcomeStrToolbox.createBrandedString(message);
 
-const toHostOutcome = (message: string): BfgGameActionHostOutcomeStr =>
-  BfgGameActionHostOutcomeStrToolbox.createBrandedString(message);
+// const toHostOutcome = (message: string): BfgGameActionHostOutcomeStr =>
+//   BfgGameActionHostOutcomeStrToolbox.createBrandedString(message);
 
 type RoundResult = 'p1' | 'p2' | 'tie';
 
@@ -198,31 +197,29 @@ export const handleRockPaperScissorsHostActionCallGameWinner = (
   gameState: RockPaperScissorsHostGameState,
   _hostAction: RockPaperScissorsHostActionCallGameWinner
 ): RockPaperScissorsBfgGameSpecificHostActionOutcome => {
-  let watcherSummary: BfgGameActionWatcherOutcomeStr;
-  let hostSummary: BfgGameActionHostOutcomeStr;
+  // const watcherSummary: BfgGameActionWatcherOutcomeStr = gameState.p1WinCount > gameState.p2WinCount
+  //   ? toPublicOutcome(
+  //       `Host declares Player 1 the game winner (${gameState.p1WinCount}-${gameState.p2WinCount} with ${gameState.tieCount} ties).`
+  //     )
+  //   : gameState.p2WinCount > gameState.p1WinCount
+  //     ? toPublicOutcome(
+  //         `Host declares Player 2 the game winner (${gameState.p2WinCount}-${gameState.p1WinCount} with ${gameState.tieCount} ties).`
+  //       )
+  //     : toPublicOutcome(
+  //         `Host declares the game a tie (${gameState.p1WinCount}-${gameState.p2WinCount} with ${gameState.tieCount} ties).`
+  //       );
 
-  if (gameState.p1WinCount > gameState.p2WinCount) {
-    watcherSummary = toPublicOutcome(
-      `Host declares Player 1 the game winner (${gameState.p1WinCount}-${gameState.p2WinCount} with ${gameState.tieCount} ties).`
-    );
-    hostSummary = toHostOutcome(
-      `Game winner called: Player 1 (${gameState.p1WinCount}-${gameState.p2WinCount}, ties: ${gameState.tieCount}).`
-    );
-  } else if (gameState.p2WinCount > gameState.p1WinCount) {
-    watcherSummary = toPublicOutcome(
-      `Host declares Player 2 the game winner (${gameState.p2WinCount}-${gameState.p1WinCount} with ${gameState.tieCount} ties).`
-    );
-    hostSummary = toHostOutcome(
-      `Game winner called: Player 2 (${gameState.p2WinCount}-${gameState.p1WinCount}, ties: ${gameState.tieCount}).`
-    );
-  } else {
-    watcherSummary = toPublicOutcome(
-      `Host declares the game a tie (${gameState.p1WinCount}-${gameState.p2WinCount} with ${gameState.tieCount} ties).`
-    );
-    hostSummary = toHostOutcome(
-      `Game winner called: tie (${gameState.p1WinCount}-${gameState.p2WinCount}, ties: ${gameState.tieCount}).`
-    );
-  }
+  // const hostSummary: BfgGameActionHostOutcomeStr = gameState.p1WinCount > gameState.p2WinCount
+  //   ? toHostOutcome(
+  //       `Game winner called: Player 1 (${gameState.p1WinCount}-${gameState.p2WinCount}, ties: ${gameState.tieCount}).`
+  //     )
+  //   : gameState.p2WinCount > gameState.p1WinCount
+  //     ? toHostOutcome(
+  //         `Game winner called: Player 2 (${gameState.p2WinCount}-${gameState.p1WinCount}, ties: ${gameState.tieCount}).`
+  //       )
+  //     : toHostOutcome(
+  //         `Game winner called: tie (${gameState.p1WinCount}-${gameState.p2WinCount}, ties: ${gameState.tieCount}).`
+  //       );
 
   const playerSeatSummaries: RpsPlayerSeatSummaries = buildPlayerSeatSummaries(
     gameState.p1WinCount >= gameState.p2WinCount ? 

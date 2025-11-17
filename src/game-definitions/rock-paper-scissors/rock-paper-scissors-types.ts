@@ -207,14 +207,14 @@ export const RpsPlayerSeatSummariesSchema = z.object({
 export type RpsPlayerSeatSummaries = z.infer<typeof RpsPlayerSeatSummariesSchema>;
 
 
-// export const RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema = z.object({
-//   updatedGameState: RockPaperScissorsHostGameStateSchema,
-//   watcherSummary: BfgGameActionWatcherOutcomeStrToolbox.schema,
-//   playerSeatSummaries: RpsPlayerSeatSummariesSchema,
-//   hostSummary: BfgGameActionHostOutcomeStrToolbox.schema,
-//   nextActions: z.null(),
-// });
-// export type RockPaperScissorsBfgGameSpecificPlayerActionOutcome = z.infer<typeof RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema>;
+export const RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema = z.object({
+  updatedGameState: RockPaperScissorsHostGameStateSchema,
+  watcherSummary: BfgGameActionWatcherOutcomeStrToolbox.schema,
+  playerSeatSummaries: RpsPlayerSeatSummariesSchema,
+  hostSummary: BfgGameActionHostOutcomeStrToolbox.schema,
+  nextActions: z.null(),
+});
+export type RockPaperScissorsBfgGameSpecificPlayerActionOutcome = z.infer<typeof RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema>;
 
 export const RockPaperScissorsGameEventSchema = BfgGameEventSchema.extend({
   // updatedGameState: RockPaperScissorsHostGameStateSchema,

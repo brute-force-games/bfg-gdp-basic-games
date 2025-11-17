@@ -1,15 +1,16 @@
-import { z } from "zod";
+import React from "react";
 import { BfgSupportedGameTitle } from "@bfg-engine";
+import type { RockPaperScissorsHostGameState } from "../rock-paper-scissors-types";
 // import { GameTableSeat, type GameTable } from "@bfg-engine/models/game-table/game-table";
-import type { RockPaperScissorsHostAction, RockPaperScissorsHostGameState } from "../rock-paper-scissors-types";
 // import type { BfgGameSpecificTableAction, DbGameTableAction } from "../../../../../bfg-engine/src/models/game-table/game-table-action";
 import { ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME } from "./action-types";
 import type { GameLobby } from "../../../../../bfg-engine/src/models/p2p-lobby";
 // import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import { BfgGameActionByHostSchema, type BfgGameActionByHost } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
 import type { GameRoomP2p, GameTableSeat } from "../../../../../bfg-engine/src/models/game-table/game-room-p2p";
-import type { IBfgGameProcessor } from "../../../../../bfg-engine/src/game-metadata/factories/complete-game-processor-factory";
-import type { GameTable } from "../../../../../bfg-engine/src/models/game-table/game-table";
+import type { IBfgGameProcessor, ApplyPlayerActionResult, ApplyHostActionResult, PlayerActionOutcomeSummary, HostActionOutcomeSummary } from "../../../../../bfg-engine/src/game-metadata/factories/complete-game-processor-factory";
+import type { BfgGameActionByHost, BfgGameActionByPlayer, BfgGameHostActionOutcome, BfgGamePlayerActionOutcome } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
+import type { BfgGameStateForHost } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-state-types";
+import type { GameTableEventWithTransition } from "../../../../../bfg-engine/src/models/game-table/game-table-event";
 // import type { IBfgGameProcessor } from "@bfg-engine/game-metadata/metadata-types";
 
 
@@ -625,9 +626,65 @@ export const RockPaperScissorsGameName = 'Rock Paper Scissors' as BfgSupportedGa
 
 // export const GoFishGameProcessor = goFishProcessorImplementation;
 
+const createHostStartsGameAction = <
+  GAH extends BfgGameActionByHost,
+>(_lobbyState: GameLobby): GAH => {
+  return {
+    source: 'host',
+    hostActionType: ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME,
+  } as unknown as GAH;
+};
+
+const createHostOpensGameOutcome = <
+  GAH extends BfgGameActionByHost,
+  GHAO extends BfgGameHostActionOutcome,
+>(_startGameAction: GAH): GHAO => {
+  return {} as GHAO;
+};
+
+const createHostOpensGameState = <
+  GAH extends BfgGameActionByHost,
+  GSH extends BfgGameStateForHost,
+>(_startGameAction: GAH): GSH => {
+  return {
+    p1Showing: 'hidden',
+    p2Showing: 'hidden',
+    p1Choice: 'rock',
+    p2Choice: 'rock',
+    p1WinCount: 0,
+    p2WinCount: 0,
+    tieCount: 0,
+  } as unknown as GSH;
+};
+
+const applyPlayerAction = async <
+  GSH extends BfgGameStateForHost,
+  GPA extends BfgGameActionByPlayer,
+  GPAO extends BfgGamePlayerActionOutcome,
+>(
+  _gameRoom: GameRoomP2p,
+  _gameState: GSH,
+  _playerAction: GPA,
+): Promise<ApplyPlayerActionResult<GSH, GPA, GPAO>> => {
+  throw new Error('Not implemented');
+};
+
+const applyHostAction = async <
+  GSH extends BfgGameStateForHost,
+  GAH extends BfgGameActionByHost,
+  GHAO extends BfgGameHostActionOutcome,
+>(
+  _gameRoom: GameRoomP2p,
+  _gameState: GSH,
+  _hostAction: GAH,
+): Promise<ApplyHostActionResult<GSH, GAH, GHAO>> => {
+  throw new Error('Not implemented');
+};
+
 // Helper function to get current player
-export const getNextToActPlayers = (_gameTable: GameRoomP2p, _gameState: RockPaperScissorsHostGameState): GameTableSeat[] => {
-  // return gameState.currentPlayerSeat;
+const getNextToActPlayers = <
+  GSH extends BfgGameStateForHost,
+>(_gameRoom: GameRoomP2p, _gameState: GSH): GameTableSeat[] => {
   throw new Error('Not implemented');
 };
 
@@ -665,32 +722,28 @@ export const getNextToActPlayers = (_gameTable: GameRoomP2p, _gameState: RockPap
 // };
 
 
-const createInitialRockPaperScissorsGameAction = (_gameRoom: GameRoomP2p, _lobbyState: GameLobby): RockPaperScissorsHostAction => {
-  const retVal: RockPaperScissorsHostAction = {
-    source: 'host',
-    hostActionType: ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME,
-  };
 
-  return retVal;
+const getPlayerDetailsLine = <
+  GSH extends BfgGameStateForHost,
+>(_gameRoom: GameRoomP2p, gameState: GSH, playerSeat: GameTableSeat): React.ReactNode => {
+  const typedGameState = gameState as unknown as RockPaperScissorsHostGameState;
+  return `Player ${playerSeat}: ${typedGameState[`p${playerSeat}Choice`] ? (typedGameState[`p${playerSeat}Choice`] as string).toString() : ''}`;
 };
 
-const createInitialRockPaperScissorsGameState = (
-  _gameTable: GameTable,
-  _gameSpecificInitialAction: RockPaperScissorsHostAction,
-): RockPaperScissorsHostGameState => {
-  return {
-    p1Showing: 'hidden',
-    p2Showing: 'hidden',
-    p1Choice: 'rock',
-    p2Choice: 'rock',
-    p1WinCount: 0,
-    p2WinCount: 0,
-    tieCount: 0,
-  };
+const summarizeGameEvent = (gameEvent: GameTableEventWithTransition): string => {
+  return `Rock Paper Scissors game event: ${gameEvent.eventType}`;
 };
 
-const getPlayerDetailsLine = (gameState: RockPaperScissorsHostGameState, playerSeat: GameTableSeat): React.ReactNode => {
-  return `Player ${playerSeat}: ${gameState[`p${playerSeat}Choice`] ? (gameState[`p${playerSeat}Choice`] as string).toString() : ''}`;
+const summarizePlayerActionOutcome = <
+  GPAO extends BfgGamePlayerActionOutcome,
+>(_playerActionOutcome: GPAO): PlayerActionOutcomeSummary => {
+  return 'Rock Paper Scissors player action completed' as PlayerActionOutcomeSummary;
+};
+
+const summarizeHostActionOutcome = <
+  GHAO extends BfgGameHostActionOutcome,
+>(_hostActionOutcome: GHAO): HostActionOutcomeSummary => {
+  return 'Rock Paper Scissors host action completed' as HostActionOutcomeSummary;
 };
 
 // const applyRockPaperScissorsPlayerAction = (_gameTable: GameTable, _gameState: RockPaperScissorsHostGameState, playerAction: RockPaperScissorsPlayerAction): GameTableActionResult<'player', RockPaperScissorsHostGameState, BfgGameSpecificPlayerActionOutcome> => {
@@ -707,20 +760,18 @@ const getPlayerDetailsLine = (gameState: RockPaperScissorsHostGameState, playerS
 //   };
 // };
 
-const summarizeRockPaperScissorsGameAction = (gameAction: BfgGameAction): string => {
-  return `Rock Paper Scissors game action: ${gameAction.actionType}`;
-};
-
-export const RockPaperScissorsGameActionProcessor = {
-  createGameSpecificInitialAction: createInitialRockPaperScissorsGameAction,
-  createGameSpecificInitialState: createInitialRockPaperScissorsGameState,
-  // applyPlayerAction: applyRockPaperScissorsPlayerAction,
-  // applyHostAction: applyRockPaperScissorsHostAction,
+export const RockPaperScissorsGameActionProcessor: IBfgGameProcessor = {
+  createHostStartsGameAction,
+  createHostOpensGameOutcome,
+  createHostOpensGameState,
   getNextToActPlayers,
-  getPlayerDetailsLine: getPlayerDetailsLine,
-  // getAllPlayersPrivateKnowledge: getAllPlayersPrivateKnowledge,
-  summarizeGameAction: summarizeRockPaperScissorsGameAction,
-} as IBfgGameProcessor;
+  getPlayerDetailsLine,
+  summarizeGameEvent,
+  applyPlayerAction,
+  applyHostAction,
+  summarizePlayerActionOutcome,
+  summarizeHostActionOutcome,
+};
 
 
 // export const RockPaperScissorsGameProcessor = createCompleteGameProcessor(
@@ -730,21 +781,15 @@ export const RockPaperScissorsGameActionProcessor = {
 
 
 
-export const RockPaperScissorsCompleteGameProcessor: IBfgGameProcessor
-  // RockPaperScissorsHostGameState,
-  // RockPaperScissorsHostAction
-= {
-  createGameSpecificInitialAction: createInitialRockPaperScissorsGameAction,
-  createGameSpecificInitialState: createInitialRockPaperScissorsGameState,
-
-  // applyPlayerAction: (_tableState: GameTable, _gameState: RockPaperScissorsHostGameState, _playerAction: RockPaperScissorsPlayerAction) => {
-  //   throw new Error('Not implemented');
-  // },
-  // applyHostAction: (_tableState: GameTable, _gameState: RockPaperScissorsHostGameState, _hostAction: RockPaperScissorsHostAction) => {
-  //   throw new Error('Not implemented');
-  // },
-  
-  getNextToActPlayers: getNextToActPlayers,
-  getPlayerDetailsLine: getPlayerDetailsLine,
-  summarizeGameAction: summarizeRockPaperScissorsGameAction,
+export const RockPaperScissorsCompleteGameProcessor: IBfgGameProcessor = {
+  createHostStartsGameAction,
+  createHostOpensGameOutcome,
+  createHostOpensGameState,
+  getNextToActPlayers,
+  getPlayerDetailsLine,
+  summarizeGameEvent,
+  applyPlayerAction,
+  applyHostAction,
+  summarizePlayerActionOutcome,
+  summarizeHostActionOutcome,
 };

@@ -2,9 +2,12 @@ import { RockPaperScissorsCompleteGameProcessor } from "./engine/rock-paper-scis
 import { RockPaperScissorsGameName } from "./engine/rock-paper-scissors-engine";
 import type { GameDefinition } from "@bfg-engine/models/game-box-definition";
 import {
+  RockPaperScissorsGameEventOutcomeSchema,
+  RockPaperScissorsGameEventSchema,
   RockPaperScissorsHostGameStateSchema,
   RockPaperScissorsPlayerGameStateSchema,
   RockPaperScissorsWatcherGameStateSchema,
+  type RockPaperScissorsGameEvent,
   type RockPaperScissorsHostGameState,
   type RockPaperScissorsPlayerGameState,
   type RockPaperScissorsWatcherGameState,
@@ -15,11 +18,9 @@ import { RpsGameSpineComponent, RpsHistoryComponent, RpsHostComponent, RpsObserv
 // import { type IBfgGameEngineAccessLevelConverters, type IBfgGameEngineComponents, type PlayerSeatGameState } from "../../../../bfg-engine/src/game-metadata/ui/bfg-game-components";
 // import { ALL_PLAYER_SEATS, type GameTable, type GameTableSeat } from "../../../../bfg-engine/src/models/game-table/game-table";
 // import { RockPaperScissorsGameEncoders } from "./engine/encoders";
-import { createBfgEngineMetadataSchemas, type BfgGameEngineMetadata, type BfgGenericEngineMetadataSchemas } from "@bfg-engine/game-metadata/metadata-types";
+import { createBfgEngineMetadataSchemas, type BfgGameEngineMetadata } from "@bfg-engine/game-metadata/metadata-types";
 import type { BfgGameEngineComponents } from "@bfg-engine/game-metadata/ui/bfg-game-components";
 import { createBfgGameEngineAccessLevelAdapters } from "@bfg-engine/game-metadata/factories/game-access-level-adapter-factory";
-import type { GameTableEventForHostP2p } from "@bfg-engine/models/game-table/game-table-event-p2p";
-import type { GameBoardEventForDb } from "@bfg-engine/models/game-table/game-board-transition-db";
 
 
 
@@ -145,8 +146,8 @@ const RockPaperScissorsGameSchemas = createBfgEngineMetadataSchemas({
   playerGameStateSchema: RockPaperScissorsPlayerGameStateSchema,
   watcherGameStateSchema: RockPaperScissorsWatcherGameStateSchema,
 
-  // gameEventSchema: RockPaperScissorsGameEventSchema,
-  // gameEventOutcomeSchema: RockPaperScissorsGameEventOutcomeSchema,
+  gameEventSchema: RockPaperScissorsGameEventSchema,
+  gameEventOutcomeSchema: RockPaperScissorsGameEventOutcomeSchema,
   // hostActionSchema: RockPaperScissorsHostActionSchema,
   // playerActionSchema: RockPaperScissorsPlayerActionSchema,
 });
@@ -261,13 +262,27 @@ const RockPaperScissorsGameAccessLevelAdapters = createBfgGameEngineAccessLevelA
 
       return retVal;
     },
-    myHostEventTransitionFromHostEventTransitionDb: (hostEventTransitionDb: GameBoardEventForDb): GameTableEventForHostP2p => {
+    myHostEventTransitionFromHostEventTransitionDb: (hostEventTransition: RockPaperScissorsGameEvent): RockPaperScissorsGameEvent => {
       return {
-        ...hostEventTransitionDb,
-        p1Choice: hostEventTransitionDb.p1Choice,
-        p2Choice: hostEventTransitionDb.p2Choice,
+        ...hostEventTransition,
+        // p1Choice: hostEventTransitionDb.p1Choice,
+        // p2Choice: hostEventTransitionDb.p2Choice,
       };
     },
+    // myHostEventTransitionToPlayerAccessLevelAdapter: (playerSeat: GameTableSeat, hostEventTransitionDb: GameBoardEventForDb): GameTableEventForPlayerP2p => {
+    //   return {
+    //     ...hostEventTransitionDb,
+    //     p1Choice: hostEventTransitionDb.p1Choice,
+    //     p2Choice: hostEventTransitionDb.p2Choice,
+    //   };
+    // },
+    // myHostEventTransitionToWatcherAccessLevelAdapter: (hostEventTransition: GameBoardEventForDb): GameTableEventForWatcherP2p => {
+    //   return {
+    //     ...hostEventTransition,
+    //     p1Choice: hostEventTransition.p1Choice,
+    //     p2Choice: hostEventTransition.p2Choice,
+    //   };
+    // },
   },
 });
 
