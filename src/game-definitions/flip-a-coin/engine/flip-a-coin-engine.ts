@@ -6,13 +6,15 @@ import {
 } from "@bfg-engine";
 import { GameTableSeat, ALL_PLAYER_SEATS } from "@bfg-engine/models/internal/game-room-base";
 import { GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
-import { BfgGameActionByPlayerSchema, BfgGameActionByHostSchema, BfgGamePlayerActionOutcomeSchema, BfgGameHostActionOutcomeSchema, BfgGameEventOutcomeSchema, type BfgGameActionByPlayer, type BfgGameActionByHost, type BfgGamePlayerActionOutcome, type BfgGameHostActionOutcome } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
-import { BfgGameStateForHostSchema, type BfgGameStateForHost } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
+import { BfgGameActionByPlayerSchema, BfgGameActionByHostSchema } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
+import { BfgGameStateForHostSchema } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
-import { IBfgGameProcessor, ApplyPlayerActionResult, ApplyHostActionResult, PlayerActionOutcomeSummary, HostActionOutcomeSummary } from "@bfg-engine/game-metadata/factories/complete-game-processor-factory";
+import { PlayerActionOutcomeSummary, HostActionOutcomeSummary } from "@bfg-engine/game-metadata/factories/complete-game-processor-factory";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 import { ROOM_PHASE_GAME_IN_PROGRESS, ROOM_PHASE_GAME_COMPLETE_WITH_WINNERS, ROOM_PHASE_GAME_COMPLETE_WITH_DRAW, ROOM_PHASE_GAME_ABANDONED, ROOM_PHASE_ERROR } from "@bfg-engine/models/internal/table-phase";
 import type { GameTableEventWithTransition } from "@bfg-engine/models/game-table/game-table-event";
+import { FlipACoinHostActionOutcomeSchema, FlipACoinPlayerActionOutcomeSchema, type FlipACoinHostActionOutcome, type FlipACoinPlayerActionOutcome } from "../game-types";
+import { createBfgGameProcessor } from "@bfg-engine/game-metadata/factories/game-processor-factory";
 
 
 export const FlipACoinGameName = 'Flip a Coin' as BfgSupportedGameTitle;
@@ -152,9 +154,7 @@ export const FlipACoinGameStateSchema = BfgGameStateForHostSchema.extend({
 export type FlipACoinGameState = z.infer<typeof FlipACoinGameStateSchema>;
 
 
-const createHostStartsGameAction = <
-  GAH extends BfgGameActionByHost,
->(lobbyState: GameLobby): GAH => {
+const createHostStartsGameAction = (lobbyState: GameLobby): FlipACoinStartGame => {
   // Players are assigned seats based on their index in playerPool
   const activePlayerSeats = lobbyState.playerPool.map((_player, index) => 
     ALL_PLAYER_SEATS[index]).filter((seat): seat is GameTableSeat => seat !== undefined);
@@ -168,14 +168,10 @@ const createHostStartsGameAction = <
   // Validate against schema to ensure type safety at runtime
   const parsed = FlipACoinStartGameSchema.parse(action);
   
-  // Type assertion needed at generic interface boundary - FlipACoinStartGame extends BfgGameActionByHost
-  return parsed as unknown as GAH;
+  return parsed;
 }
 
-const createHostOpensGameOutcome = <
-  GAH extends BfgGameActionByHost,
-  GHAO extends BfgGameHostActionOutcome,
->(_startGameAction: GAH): GHAO => {
+const createHostOpensGameOutcome = (_startGameAction: FlipACoinStartGame): FlipACoinHostActionOutcome => {
   const outcome = {
     description: 'Flip a Coin started by host',
   };
@@ -183,14 +179,11 @@ const createHostOpensGameOutcome = <
   // Validate against schema to ensure type safety
   const parsed = FlipACoinHostActionOutcomeSchema.parse(outcome);
   
-  // Cast to generic type - this is safe because FlipACoinHostActionOutcome extends BfgGameHostActionOutcome
-  return parsed as GHAO;
+  // Type assertion needed because the schema allows description but the type is StrictEmptyObject
+  return parsed as unknown as FlipACoinHostActionOutcome;
 }
 
-const createHostOpensGameState = <
-  GAH extends BfgGameActionByHost,
-  GSH extends BfgGameStateForHost,
->(startGameAction: GAH): GSH => {
+const createHostOpensGameState = (startGameAction: FlipACoinStartGame): FlipACoinGameState => {
   // Validate the action against our schema to extract typed information
   const parsedAction = FlipACoinStartGameSchema.safeParse(startGameAction);
   
@@ -220,203 +213,221 @@ const createHostOpensGameState = <
   // Validate against schema to ensure type safety at runtime
   const parsedState = FlipACoinGameStateSchema.parse(state);
   
-  // Type assertion needed at generic interface boundary - FlipACoinGameState extends BfgGameStateForHost
-  // This is safe because FlipACoinGameState extends BfgGameStateForHost, but TypeScript can't prove
-  // that it satisfies every possible instantiation of GSH
-  const result: GSH = parsedState as unknown as GSH;
-  return result;
+  return parsedState;
 }
 
 
-const applyPlayerAction = async <
-  GSH extends BfgGameStateForHost,
-  GPA extends BfgGameActionByPlayer,
-  GPAO extends BfgGamePlayerActionOutcome,
->(
+const applyPlayerAction = async (
   _gameRoom: GameRoomP2p,
-  gameState: GSH,
-  playerAction: GPA,
-): Promise<ApplyPlayerActionResult<GSH, GPA, GPAO>> => {
+  gameState: FlipACoinGameState,
+  playerAction: FlipACoinPlayerAction,
+) => {
 
   console.log("APPLY FLIP A COIN GAME ACTION - GAME STATE", gameState);
   console.log("APPLY FLIP A COIN GAME ACTION - GAME ACTION", playerAction);
 
-  const typedPlayerAction = playerAction as unknown as FlipACoinPlayerAction;
-  const typedGameState = gameState as unknown as FlipACoinGameState;
-  const playerSeat = typedPlayerAction.playerSeat;
+  const playerSeat = playerAction.playerSeat;
 
-  if (typedPlayerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN) {
-    const summary = `Player ${playerSeat} chose ${typedPlayerAction.chosenCoin}`;
+  if (playerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN) {
+    const summary = `Player ${playerSeat} chose ${playerAction.chosenCoin}`;
+
+    const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+      description: summary,
+    });
 
     return {
       playerAction,
-      playerActionOutcome: {} as GPAO,
+      playerActionOutcome,
       updatedGameState: {
-        ...typedGameState,
-        chosenCoin: typedPlayerAction.chosenCoin,
+        ...gameState,
+        chosenCoin: playerAction.chosenCoin,
         outcomeSummary: summary,
-      } as unknown as GSH,
+      },
       updatedRoomPhase: ROOM_PHASE_GAME_IN_PROGRESS,
     }
   } 
 
-  if (typedPlayerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT) {
-    const summary = `Player ${playerSeat} prefers ${typedPlayerAction.preferredFlipResult}`;
+  if (playerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT) {
+    const summary = `Player ${playerSeat} prefers ${playerAction.preferredFlipResult}`;
 
     // Update or add preference for this seat
-    const existingPrefIndex = typedGameState.playerFlipResultPreferences.findIndex(pref => pref.seat === playerSeat);
+    const existingPrefIndex = gameState.playerFlipResultPreferences.findIndex(pref => pref.seat === playerSeat);
     const updatedPreferences = existingPrefIndex >= 0
-      ? typedGameState.playerFlipResultPreferences.map((pref, index) => 
+      ? gameState.playerFlipResultPreferences.map((pref, index) => 
           index === existingPrefIndex 
-            ? { seat: playerSeat, preference: typedPlayerAction.preferredFlipResult }
+            ? { seat: playerSeat, preference: playerAction.preferredFlipResult }
             : pref
         )
-      : [...typedGameState.playerFlipResultPreferences, { seat: playerSeat, preference: typedPlayerAction.preferredFlipResult }];
+      : [...gameState.playerFlipResultPreferences, { seat: playerSeat, preference: playerAction.preferredFlipResult }];
+
+    const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+      description: summary,
+    });
 
     return {
       playerAction,
-      playerActionOutcome: {} as GPAO,
+      playerActionOutcome,
       updatedGameState: {
-        ...typedGameState,
+        ...gameState,
         playerFlipResultPreferences: updatedPreferences,
         outcomeSummary: summary,
-      } as unknown as GSH,
+      },
       updatedRoomPhase: ROOM_PHASE_GAME_IN_PROGRESS,
     }
   }
   
-  if (typedPlayerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN) {
-    const summary = `Player ${playerSeat} flipped the ${typedGameState.chosenCoin} and got ${typedPlayerAction.flipResult}`;
+  if (playerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN) {
+    const summary = `Player ${playerSeat} flipped the ${gameState.chosenCoin} and got ${playerAction.flipResult}`;
+
+    const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+      description: summary,
+    });
 
     return {
       playerAction,
-      playerActionOutcome: {} as GPAO,
+      playerActionOutcome,
       updatedGameState: {
-        ...typedGameState,
+        ...gameState,
         isFlipped: true,
-        flipResult: typedPlayerAction.flipResult,
+        flipResult: playerAction.flipResult,
         outcomeSummary: summary,
-      } as unknown as GSH,
+      },
       updatedRoomPhase: ROOM_PHASE_GAME_IN_PROGRESS,
     }
   }
 
-  if (typedPlayerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME) {
-    if (!typedGameState.isFlipped) {
+  if (playerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME) {
+    if (!gameState.isFlipped) {
+      const errorSummary = `Player ${playerSeat} called it but coin hasn't been flipped`;
+      const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+        description: errorSummary,
+      });
+
       return {
         playerAction,
-        playerActionOutcome: {} as GPAO,
+        playerActionOutcome,
         updatedGameState: {
-          ...typedGameState,
+          ...gameState,
           isGameOver: true,
-          outcomeSummary: `Player ${playerSeat} called it but coin hasn't been flipped`,
-        } as unknown as GSH,
+          outcomeSummary: errorSummary,
+        },
         updatedRoomPhase: ROOM_PHASE_ERROR,
       }
     }
 
-    const winningPlayers = typedGameState.playerFlipResultPreferences
-      .filter(pref => pref.preference === typedGameState.flipResult)
+    const winningPlayers = gameState.playerFlipResultPreferences
+      .filter(pref => pref.preference === gameState.flipResult)
       .map(pref => pref.seat);
 
     const anyWinners = winningPlayers.length > 0;
 
     if (anyWinners) {
-      const summary = `Player ${playerSeat} called it for ${typedGameState.flipResult} - ${winningPlayers.join(', ')} win`;
+      const summary = `Player ${playerSeat} called it for ${gameState.flipResult} - ${winningPlayers.join(', ')} win`;
+      const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+        description: summary,
+      });
 
       return {
         playerAction,
-        playerActionOutcome: {} as GPAO,
+        playerActionOutcome,
         updatedGameState: {
-          ...typedGameState,
+          ...gameState,
           isGameOver: true,
-          finalFlipResult: typedGameState.flipResult,
+          finalFlipResult: gameState.flipResult,
           outcomeSummary: summary,
-        } as unknown as GSH,
+        },
         updatedRoomPhase: ROOM_PHASE_GAME_COMPLETE_WITH_WINNERS,
       }
     }
 
-    const drawSummary = `Player ${playerSeat} called it for ${typedGameState.flipResult} - no winners`;
+    const drawSummary = `Player ${playerSeat} called it for ${gameState.flipResult} - no winners`;
+    const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+      description: drawSummary,
+    });
 
     return {
       playerAction,
-      playerActionOutcome: {} as GPAO,
+      playerActionOutcome,
       updatedGameState: {
-        ...typedGameState,
+        ...gameState,
         isGameOver: true,
-        finalFlipResult: typedGameState.flipResult,
+        finalFlipResult: gameState.flipResult,
         outcomeSummary: drawSummary,
-      } as unknown as GSH,
+      },
       updatedRoomPhase: ROOM_PHASE_GAME_COMPLETE_WITH_DRAW,
     }
   }
 
-  if (typedPlayerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME) {
+  if (playerAction.playerActionType === FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME) {
+    const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+      description: playerAction.cancellationReason,
+    });
+
     return {
       playerAction,
-      playerActionOutcome: {} as GPAO,
+      playerActionOutcome,
       updatedGameState: {
-        ...typedGameState,
+        ...gameState,
         isGameOver: true,
-        outcomeSummary: typedPlayerAction.cancellationReason,
-      } as unknown as GSH,
+        outcomeSummary: playerAction.cancellationReason,
+      },
       updatedRoomPhase: ROOM_PHASE_GAME_ABANDONED,
     }
   }
 
+  const playerActionOutcome = FlipACoinPlayerActionOutcomeSchema.parse({
+    description: 'Invalid player action',
+  });
+
   return {
     playerAction,
-    playerActionOutcome: {} as GPAO,
+    playerActionOutcome,
     updatedGameState: gameState,
     updatedRoomPhase: ROOM_PHASE_ERROR,
   };
 }
 
 
-const applyHostAction = async <
-  GSH extends BfgGameStateForHost,
-  GAH extends BfgGameActionByHost,
-  GHAO extends BfgGameHostActionOutcome,
->(
+const applyHostAction = async (
   _gameRoom: GameRoomP2p,
-  gameState: GSH,
-  hostAction: GAH,
-): Promise<ApplyHostActionResult<GSH, GAH, GHAO>> => {
+  gameState: FlipACoinGameState,
+  hostAction: FlipACoinHostAction,
+) => {
 
   console.log("APPLY FLIP A COIN HOST ACTION - GAME STATE", gameState);
   console.log("APPLY FLIP A COIN HOST ACTION - HOST ACTION", hostAction);
 
-  const typedHostAction = hostAction as unknown as FlipACoinHostAction;
-  const typedGameState = gameState as unknown as FlipACoinGameState;
-
-  if (typedHostAction.hostActionType === FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME) {
+  if (hostAction.hostActionType === FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME) {
     const summary = `Host started the game`;
+    const hostActionOutcome = FlipACoinHostActionOutcomeSchema.parse({
+      description: summary,
+    });
 
     return {
       hostAction,
-      hostActionOutcome: {} as GHAO,
+      hostActionOutcome,
       updatedGameState: {
-        ...typedGameState,
+        ...gameState,
         outcomeSummary: summary,
-      } as unknown as GSH,
+      },
       updatedRoomPhase: ROOM_PHASE_GAME_IN_PROGRESS,
     }
   }
 
+  const hostActionOutcome = FlipACoinHostActionOutcomeSchema.parse({
+    description: 'Invalid host action',
+  });
+
   return {
     hostAction,
-    hostActionOutcome: {} as GHAO,
+    hostActionOutcome,
     updatedGameState: gameState,
     updatedRoomPhase: ROOM_PHASE_ERROR,
   };
 }
 
-const getNextToActPlayers = <
-  GSH extends BfgGameStateForHost,
->(gameRoom: GameRoomP2p, gameState: GSH): GameTableSeat[] => {
-  const typedGameState = gameState as unknown as FlipACoinGameState;
-  if (typedGameState.isGameOver) {
+const getNextToActPlayers = (gameRoom: GameRoomP2p, gameState: FlipACoinGameState): GameTableSeat[] => {
+  if (gameState.isGameOver) {
     return [];
   }
 
@@ -425,22 +436,19 @@ const getNextToActPlayers = <
   return nextPlayersToAct;
 }
 
-const getPlayerDetailsLine = <
-  GSH extends BfgGameStateForHost,
->(_gameRoom: GameRoomP2p, gameState: GSH, playerSeat: GameTableSeat): React.ReactNode => {
-  const typedGameState = gameState as unknown as FlipACoinGameState;
-  const playerPref = typedGameState.playerFlipResultPreferences.find(pref => pref.seat === playerSeat);
+const getPlayerDetailsLine = (_gameRoom: GameRoomP2p, gameState: FlipACoinGameState, playerSeat: GameTableSeat): React.ReactNode => {
+  const playerPref = gameState.playerFlipResultPreferences.find(pref => pref.seat === playerSeat);
   const playerFlipResultPreference = playerPref?.preference ?? 'no-preference';
   
-  if (!typedGameState.isGameOver) {
+  if (!gameState.isGameOver) {
     return `Player ${playerSeat} wants ${playerFlipResultPreference}`;
   }
 
-  if (typedGameState.finalFlipResult === playerFlipResultPreference) {
-    return `Player ${playerSeat} won with ${typedGameState.finalFlipResult}`;
+  if (gameState.finalFlipResult === playerFlipResultPreference) {
+    return `Player ${playerSeat} won with ${gameState.finalFlipResult}`;
   } 
   
-  return `Player ${playerSeat} lost with ${typedGameState.finalFlipResult}`;
+  return `Player ${playerSeat} lost with ${gameState.finalFlipResult}`;
 }
 
 
@@ -448,36 +456,46 @@ const summarizeGameEvent = (gameEvent: GameTableEventWithTransition): string => 
   return `Flip a coin event: ${gameEvent.eventType}`;
 }
 
-const summarizePlayerActionOutcome = <
-  GPAO extends BfgGamePlayerActionOutcome,
->(_playerActionOutcome: GPAO): PlayerActionOutcomeSummary => {
+const summarizePlayerActionOutcome = (_playerActionOutcome: FlipACoinPlayerActionOutcome): PlayerActionOutcomeSummary => {
   return 'Flip a coin player action completed' as PlayerActionOutcomeSummary;
 }
 
-const summarizeHostActionOutcome = <
-  GHAO extends BfgGameHostActionOutcome,
->(_hostActionOutcome: GHAO): HostActionOutcomeSummary => {
+const summarizeHostActionOutcome = (_hostActionOutcome: FlipACoinHostActionOutcome): HostActionOutcomeSummary => {
   return 'Flip a coin host action completed' as HostActionOutcomeSummary;
 }
 
-export const FlipACoinPlayerActionOutcomeSchema = BfgGamePlayerActionOutcomeSchema;
-export type FlipACoinPlayerActionOutcome = z.infer<typeof FlipACoinPlayerActionOutcomeSchema>;
+// export const FlipACoinGameProcessor: IBfgGameProcessor = {
+//   createHostStartsGameAction,
+//   createHostOpensGameOutcome,
+//   createHostOpensGameState,
+//   applyPlayerAction,
+//   applyHostAction,
+//   getNextToActPlayers,
+//   getPlayerDetailsLine,
+//   summarizeGameEvent,
+//   summarizePlayerActionOutcome,
+//   summarizeHostActionOutcome,
+// };
 
-export const FlipACoinHostActionOutcomeSchema = BfgGameHostActionOutcomeSchema;
-export type FlipACoinHostActionOutcome = z.infer<typeof FlipACoinHostActionOutcomeSchema>;
 
-export const FlipACoinGameEventOutcomeSchema = BfgGameEventOutcomeSchema.extend({}).describe('FlipACoinGameEventOutcome');
-export type FlipACoinGameEventOutcome = z.infer<typeof FlipACoinGameEventOutcomeSchema>;
-
-export const FlipACoinGameProcessor: IBfgGameProcessor = {
-  createHostStartsGameAction,
-  createHostOpensGameOutcome,
-  createHostOpensGameState,
-  applyPlayerAction,
-  applyHostAction,
-  getNextToActPlayers,
-  getPlayerDetailsLine,
-  summarizeGameEvent,
-  summarizePlayerActionOutcome,
-  summarizeHostActionOutcome,
-};
+export const FlipACoinGameProcessor = createBfgGameProcessor({
+  schemas: {
+    hostGameStateSchema: FlipACoinGameStateSchema,
+    playerGameStateSchema: FlipACoinGameStateSchema,
+    watcherGameStateSchema: FlipACoinGameStateSchema,
+    gameEventSchema: FlipACoinGameEventSchema,
+    gameEventOutcomeSchema: FlipACoinPlayerActionOutcomeSchema,
+  },
+  gameFunctions: {
+    createHostStartsGameAction,
+    createHostOpensGameOutcome,
+    createHostOpensGameState,
+    getNextToActPlayers,
+    getPlayerDetailsLine,
+    summarizeGameEvent,
+    summarizePlayerActionOutcome,
+    summarizeHostActionOutcome,
+    applyPlayerAction,
+    applyHostAction,
+  },
+});
