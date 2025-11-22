@@ -1,17 +1,14 @@
 import React from "react";
 import { BfgSupportedGameTitle } from "@bfg-engine";
 import type { RockPaperScissorsHostGameState } from "../rock-paper-scissors-types";
-// import { GameTableSeat, type GameTable } from "@bfg-engine/models/game-table/game-table";
-// import type { BfgGameSpecificTableAction, DbGameTableAction } from "../../../../../bfg-engine/src/models/game-table/game-table-action";
 import { ROCK_PAPER_SCISSORS_HOST_ACTION_START_GAME } from "./action-types";
 import type { GameLobby } from "../../../../../bfg-engine/src/models/p2p-lobby";
-// import { BfgGameTableActionId } from "@bfg-engine/models/types/bfg-branded-uuids";
-import type { GameRoomP2p, GameTableSeat } from "../../../../../bfg-engine/src/models/game-table/game-room-p2p";
+import { GameTableSeat } from "@bfg-engine/models/internal/game-room-base";
+import { GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
 import type { IBfgGameProcessor, ApplyPlayerActionResult, ApplyHostActionResult, PlayerActionOutcomeSummary, HostActionOutcomeSummary } from "../../../../../bfg-engine/src/game-metadata/factories/complete-game-processor-factory";
 import type { BfgGameActionByHost, BfgGameActionByPlayer, BfgGameHostActionOutcome, BfgGamePlayerActionOutcome } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-action-types";
-import type { BfgGameStateForHost } from "../../../../../bfg-engine/src/game-metadata/metadata-types/game-state-types";
-import type { GameTableEventWithTransition } from "../../../../../bfg-engine/src/models/game-table/game-table-event";
-// import type { IBfgGameProcessor } from "@bfg-engine/game-metadata/metadata-types";
+import type { BfgGameStateForHost } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
+import type { GameTableEventWithTransition } from "@bfg-engine/models/game-table/game-table-event";
 
 
 export const RockPaperScissorsGameName = 'Rock Paper Scissors' as BfgSupportedGameTitle;

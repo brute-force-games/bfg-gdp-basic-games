@@ -1,4 +1,4 @@
-import { GameTableSeat } from "@bfg-engine/models/game-table/game-room-p2p";
+import { GameTableSeat } from "@bfg-engine/models/internal/game-room-base";
 import { FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT, FlipACoinPlayerAction, FlipACoinGameState, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
 import { Button, Box, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 import type { BfgGameActionByPlayer } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
@@ -16,7 +16,7 @@ export const FlipACoinInput = (props: FlipACoinInputProps) => {
   
   const chosenCoin = gameState.chosenCoin;
   const flipOutcome = gameState.flipResult;
-  const myPlayerOutcomePreference = gameState.playerFlipResultPreferences[myPlayerSeat];
+  const myPlayerOutcomePreference = gameState.playerFlipResultPreferences?.find(pref => pref.seat === myPlayerSeat)?.preference ?? 'no-preference';
 
 
   const chooseCoin = (coinType: "penny" | "nickel" | "dime" | "quarter") => {

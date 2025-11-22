@@ -1,4 +1,4 @@
-import { GameTableSeat } from "@bfg-engine/models/game-table/game-room-p2p";
+import { GameTableSeat } from "@bfg-engine/models/internal/game-room-base";
 import { FlipACoinPlayerAction, FlipACoinGameState, FlipACoinHostAction } from "../engine/flip-a-coin-engine";
 import { Box, Stack, Typography } from "@bfg-engine/ui/bfg-ui";
 
@@ -27,7 +27,7 @@ export const FlipACoinRepresentation = (props: FlipACoinRepresentationProps) => 
 
   const preferredOutcome = myPlayerSeat === null ?
     "Just watching" :
-    gameState.playerFlipResultPreferences?.[myPlayerSeat];
+    gameState.playerFlipResultPreferences?.find(pref => pref.seat === myPlayerSeat)?.preference ?? 'no-preference';
 
   const getOutcomeResult = () => {
     if (gameState.flipResult === undefined) {
@@ -38,7 +38,8 @@ export const FlipACoinRepresentation = (props: FlipACoinRepresentationProps) => 
       return ':|';
     }
 
-    switch (gameState.playerFlipResultPreferences?.[myPlayerSeat]) {
+    const preference = gameState.playerFlipResultPreferences?.find(pref => pref.seat === myPlayerSeat)?.preference ?? 'no-preference';
+    switch (preference) {
       case 'heads':
         return gameState.flipResult === 'heads' ? ':D' : ':(';
       case 'tails':
