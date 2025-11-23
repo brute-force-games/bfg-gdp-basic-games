@@ -1,8 +1,8 @@
-import { FlipACoinPlayerAction, FlipACoinGameState } from "../../engine/flip-a-coin-engine";
 import { FlipACoinRepresentation } from "../flip-a-coin-representation";
 import { FlipACoinInput } from "../flip-a-coin-input";
 import { PlayerComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
 import { Box, Stack } from "@bfg-engine/ui/bfg-ui";
+import type { FlipACoinPlayerAction, FlipACoinGameState } from "../../game-types";
 import type { BfgGameStateForPlayer } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 
 

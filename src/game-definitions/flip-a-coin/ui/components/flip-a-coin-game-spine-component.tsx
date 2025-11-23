@@ -1,11 +1,14 @@
 import { GameSpineComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components"
-import { FlipACoinGameName, FlipACoinGameState } from "../../engine/flip-a-coin-engine"
+import { FlipACoinGameName } from "../../engine/flip-a-coin-engine"
 import { useGameMetadata } from "@bfg-engine";
 import { BfgGameSpine } from "@bfg-engine/ui/bfg-ui";
 import type { BfgGameStateForWatcher } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
+import type { FlipACoinGameState } from "../../game-types";
 
 
-export const FlipACoinGameSpineComponent = (props: GameSpineComponentProps<BfgGameStateForWatcher>) => {
+export const FlipACoinGameSpineComponent = (
+  props: GameSpineComponentProps<BfgGameStateForWatcher>,
+) => {
   const { gameRoom, allPlayerProfiles, gameState, orientation } = props;
 
   const gameMetadata = useGameMetadata(FlipACoinGameName);

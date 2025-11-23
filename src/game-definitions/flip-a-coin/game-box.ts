@@ -1,5 +1,4 @@
 import { GameDefinition } from "@bfg-engine";
-import { FlipACoinGameState, FlipACoinGameProcessor, FlipACoinGameName, FlipACoinGameStateSchema, FlipACoinGameEventSchema, type FlipACoinGameEvent } from "./engine/flip-a-coin-engine";
 import { FlipACoinObserverComponent } from "./ui/components/flip-a-coin-observer-component";
 import { FlipACoinHostComponent } from "./ui/components/flip-a-coin-host-component";
 import { FlipACoinPlayerComponent } from "./ui/components/flip-a-coin-player-component";
@@ -7,7 +6,8 @@ import { FlipACoinGameSpineComponent } from "./ui/components/flip-a-coin-game-sp
 import { createBfgEngineMetadataSchemas, type BfgGameEngineMetadata } from "../../../../bfg-engine/src/game-metadata/metadata-types";
 import type { BfgGameEngineComponents } from "@bfg-engine/game-metadata/ui/bfg-game-components";
 import { createBfgGameEngineAccessLevelAdapters } from "@bfg-engine/game-metadata/factories/game-access-level-adapter-factory";
-import { FlipACoinGameEventOutcomeSchema } from "./game-types";
+import { FlipACoinGameEventOutcomeSchema, FlipACoinGameEventSchema, FlipACoinGameStateSchema, type FlipACoinGameEvent, type FlipACoinGameState } from "./game-types";
+import { FlipACoinGameName, FlipACoinGameProcessor } from "./engine/flip-a-coin-engine";
 
 
 export const FlipACoinGameDefinition: GameDefinition = {

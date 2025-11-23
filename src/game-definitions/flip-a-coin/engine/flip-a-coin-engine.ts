@@ -1,157 +1,153 @@
-import { z } from "zod";
 import React from "react";
 import { 
-  GameTableSeatSchema,
   BfgSupportedGameTitle,
 } from "@bfg-engine";
 import { GameTableSeat, ALL_PLAYER_SEATS } from "@bfg-engine/models/internal/game-room-base";
 import { GameRoomP2p } from "@bfg-engine/models/p2p/game-room-p2p";
-import { BfgGameActionByPlayerSchema, BfgGameActionByHostSchema } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
-import { BfgGameStateForHostSchema } from "@bfg-engine/game-metadata/metadata-types/game-state-types";
 import { GameLobby } from "@bfg-engine/models/p2p-lobby";
 import { PlayerActionOutcomeSummary, HostActionOutcomeSummary } from "@bfg-engine/game-metadata/factories/complete-game-processor-factory";
 import { getActivePlayerSeatsForGameTable } from "@bfg-engine/ops/game-table-ops/player-seat-utils";
 import { ROOM_PHASE_GAME_IN_PROGRESS, ROOM_PHASE_GAME_COMPLETE_WITH_WINNERS, ROOM_PHASE_GAME_COMPLETE_WITH_DRAW, ROOM_PHASE_GAME_ABANDONED, ROOM_PHASE_ERROR } from "@bfg-engine/models/internal/table-phase";
 import type { GameTableEventWithTransition } from "@bfg-engine/models/game-table/game-table-event";
-import { FlipACoinHostActionOutcomeSchema, FlipACoinPlayerActionOutcomeSchema, type FlipACoinHostActionOutcome, type FlipACoinPlayerActionOutcome } from "../game-types";
+import { FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN, FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT, FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME, FlipACoinGameEventSchema, FlipACoinGameStateSchema, FlipACoinHostActionOutcomeSchema, FlipACoinPlayerActionOutcomeSchema, FlipACoinStartGameSchema, type FlipACoinGameState, type FlipACoinHostAction, type FlipACoinHostActionOutcome, type FlipACoinPlayerAction, type FlipACoinPlayerActionOutcome, type FlipACoinPlayerFlipResultPreference, type FlipACoinStartGame } from "../game-types";
 import { createBfgGameProcessor } from "@bfg-engine/game-metadata/factories/game-processor-factory";
 
 
 export const FlipACoinGameName = 'Flip a Coin' as BfgSupportedGameTitle;
 
 
-export const FlipACoinResolutionSchema = z.enum([
-  'game-in-progress',
-  'game-over-heads-wins',
-  'game-over-tails-wins',
-])
+// export const FlipACoinResolutionSchema = z.enum([
+//   'game-in-progress',
+//   'game-over-heads-wins',
+//   'game-over-tails-wins',
+// ])
 
-export type FlipACoinResolution = z.infer<typeof FlipACoinResolutionSchema>;
-
-
-export const FlipACoinResultSchema = z.enum([
-  'heads',
-  'tails',
-])
-
-export type FlipACoinResult = z.infer<typeof FlipACoinResultSchema>;
+// export type FlipACoinResolution = z.infer<typeof FlipACoinResolutionSchema>;
 
 
-export const FlipACoinPlayerFlipResultPreferenceSchema = z.enum([
-  'heads',
-  'tails',
-  'no-preference',
-])
+// export const FlipACoinResultSchema = z.enum([
+//   'heads',
+//   'tails',
+// ])
 
-export type FlipACoinPlayerFlipResultPreference = z.infer<typeof FlipACoinPlayerFlipResultPreferenceSchema>;
-
-
-export const CoinChoiceSchema = z.enum([
-  'penny',
-  'nickel',
-  'dime',
-  'quarter',
-])
-
-export type CoinChoice = z.infer<typeof CoinChoiceSchema>;
+// export type FlipACoinResult = z.infer<typeof FlipACoinResultSchema>;
 
 
-export const FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME = 'game-table-action-host-starts-game' as const;
-export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN = 'game-table-action-player-choose-coin' as const;
-export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN = 'game-table-action-player-flip-coin' as const;
-export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT = 'game-table-action-player-prefer-flip-result' as const;
-export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME = 'game-table-action-player-call-it-and-finish-game' as const;
-export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME = 'game-table-action-player-cancel-game' as const;
+// export const FlipACoinPlayerFlipResultPreferenceSchema = z.enum([
+//   'heads',
+//   'tails',
+//   'no-preference',
+// ])
+
+// export type FlipACoinPlayerFlipResultPreference = z.infer<typeof FlipACoinPlayerFlipResultPreferenceSchema>;
 
 
-export const FlipACoinStartGameSchema = BfgGameActionByHostSchema.extend({
-  hostActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME),
-  activePlayerSeats: z.array(GameTableSeatSchema),
-})
+// export const CoinChoiceSchema = z.enum([
+//   'penny',
+//   'nickel',
+//   'dime',
+//   'quarter',
+// ])
 
-export type FlipACoinStartGame = z.infer<typeof FlipACoinStartGameSchema>;
-
-
-export const FlipACoinActionChooseCoinSchema = BfgGameActionByPlayerSchema.extend({
-  playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN),
-  chosenCoin: CoinChoiceSchema,
-})
-
-export const FlipACoinActionFlipCoinSchema = BfgGameActionByPlayerSchema.extend({
-  playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN),
-  flipResult: FlipACoinResultSchema,
-})
-
-export const FlipACoinActionPreferOutcomeSchema = BfgGameActionByPlayerSchema.extend({
-  playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT),
-  preferredFlipResult: FlipACoinPlayerFlipResultPreferenceSchema,
-})
-
-export const FlipACoinActionCallItAndFinishGameSchema = BfgGameActionByPlayerSchema.extend({
-  playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME),
-  calledFlipResult: FlipACoinResultSchema,
-})
-
-export const FlipACoinActionCancelGameSchema = BfgGameActionByPlayerSchema.extend({
-  playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME),
-  cancellationReason: z.string(),
-})
-
-export const FlipACoinPlayerActionSchema = z.discriminatedUnion('playerActionType', [
-  FlipACoinActionChooseCoinSchema, 
-  FlipACoinActionFlipCoinSchema,
-  FlipACoinActionPreferOutcomeSchema,
-  FlipACoinActionCallItAndFinishGameSchema,
-  FlipACoinActionCancelGameSchema,
-])
-
-export type FlipACoinPlayerAction = z.infer<typeof FlipACoinPlayerActionSchema>;
+// export type CoinChoice = z.infer<typeof CoinChoiceSchema>;
 
 
-export const FlipACoinHostActionSchema = z.discriminatedUnion('hostActionType', [
-  FlipACoinStartGameSchema,
-])
-
-export type FlipACoinHostAction = z.infer<typeof FlipACoinHostActionSchema>;
-
-export const AllFlipACoinGameEventsSchema = [
-  FlipACoinStartGameSchema,
-  FlipACoinActionChooseCoinSchema,
-  FlipACoinActionFlipCoinSchema,
-  FlipACoinActionPreferOutcomeSchema,
-  FlipACoinActionCallItAndFinishGameSchema,
-  FlipACoinActionCancelGameSchema,
-] as const;
-export type AllFlipACoinGameEvents = z.infer<typeof AllFlipACoinGameEventsSchema>;
-
-export const FlipACoinGameEventSchema = z.union([
-  FlipACoinStartGameSchema,
-  FlipACoinActionChooseCoinSchema,
-  FlipACoinActionFlipCoinSchema,
-  FlipACoinActionPreferOutcomeSchema,
-  FlipACoinActionCallItAndFinishGameSchema,
-  FlipACoinActionCancelGameSchema,
-]);
-export type FlipACoinGameEvent = z.infer<typeof FlipACoinGameEventSchema>;
+// export const FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME = 'game-table-action-host-starts-game' as const;
+// export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN = 'game-table-action-player-choose-coin' as const;
+// export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN = 'game-table-action-player-flip-coin' as const;
+// export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT = 'game-table-action-player-prefer-flip-result' as const;
+// export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME = 'game-table-action-player-call-it-and-finish-game' as const;
+// export const FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME = 'game-table-action-player-cancel-game' as const;
 
 
-export const FlipACoinGameStateSchema = BfgGameStateForHostSchema.extend({
-  chosenCoin: CoinChoiceSchema,
+// export const FlipACoinStartGameSchema = BfgGameActionByHostSchema.extend({
+//   hostActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_START_GAME),
+//   activePlayerSeats: z.array(GameTableSeatSchema),
+// })
+
+// export type FlipACoinStartGame = z.infer<typeof FlipACoinStartGameSchema>;
+
+
+// export const FlipACoinActionChooseCoinSchema = BfgGameActionByPlayerSchema.extend({
+//   playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CHOOSE_COIN),
+//   chosenCoin: CoinChoiceSchema,
+// })
+
+// export const FlipACoinActionFlipCoinSchema = BfgGameActionByPlayerSchema.extend({
+//   playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_FLIP_COIN),
+//   flipResult: FlipACoinResultSchema,
+// })
+
+// export const FlipACoinActionPreferOutcomeSchema = BfgGameActionByPlayerSchema.extend({
+//   playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_PREFER_FLIP_RESULT),
+//   preferredFlipResult: FlipACoinPlayerFlipResultPreferenceSchema,
+// })
+
+// export const FlipACoinActionCallItAndFinishGameSchema = BfgGameActionByPlayerSchema.extend({
+//   playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CALL_IT_AND_FINISH_GAME),
+//   calledFlipResult: FlipACoinResultSchema,
+// })
+
+// export const FlipACoinActionCancelGameSchema = BfgGameActionByPlayerSchema.extend({
+//   playerActionType: z.literal(FLIP_A_COIN_GAME_TABLE_ACTION_PLAYER_CANCEL_GAME),
+//   cancellationReason: z.string(),
+// })
+
+// export const FlipACoinPlayerActionSchema = z.discriminatedUnion('playerActionType', [
+//   FlipACoinActionChooseCoinSchema, 
+//   FlipACoinActionFlipCoinSchema,
+//   FlipACoinActionPreferOutcomeSchema,
+//   FlipACoinActionCallItAndFinishGameSchema,
+//   FlipACoinActionCancelGameSchema,
+// ])
+
+// export type FlipACoinPlayerAction = z.infer<typeof FlipACoinPlayerActionSchema>;
+
+
+// export const FlipACoinHostActionSchema = z.discriminatedUnion('hostActionType', [
+//   FlipACoinStartGameSchema,
+// ])
+
+// export type FlipACoinHostAction = z.infer<typeof FlipACoinHostActionSchema>;
+
+// export const AllFlipACoinGameEventsSchema = [
+//   FlipACoinStartGameSchema,
+//   FlipACoinActionChooseCoinSchema,
+//   FlipACoinActionFlipCoinSchema,
+//   FlipACoinActionPreferOutcomeSchema,
+//   FlipACoinActionCallItAndFinishGameSchema,
+//   FlipACoinActionCancelGameSchema,
+// ] as const;
+// export type AllFlipACoinGameEvents = z.infer<typeof AllFlipACoinGameEventsSchema>;
+
+// export const FlipACoinGameEventSchema = z.union([
+//   FlipACoinStartGameSchema,
+//   FlipACoinActionChooseCoinSchema,
+//   FlipACoinActionFlipCoinSchema,
+//   FlipACoinActionPreferOutcomeSchema,
+//   FlipACoinActionCallItAndFinishGameSchema,
+//   FlipACoinActionCancelGameSchema,
+// ]);
+// export type FlipACoinGameEvent = z.infer<typeof FlipACoinGameEventSchema>;
+
+
+// export const FlipACoinGameStateSchema = BfgGameStateForHostSchema.extend({
+//   chosenCoin: CoinChoiceSchema,
   
-  isGameOver: z.boolean(),
-  finalFlipResult: FlipACoinResultSchema.optional(),
-  outcomeSummary: z.string().optional(),
+//   isGameOver: z.boolean(),
+//   finalFlipResult: FlipACoinResultSchema.optional(),
+//   outcomeSummary: z.string().optional(),
 
-  isFlipped: z.boolean(),
-  flipResult: FlipACoinResultSchema.optional(),  
+//   isFlipped: z.boolean(),
+//   flipResult: FlipACoinResultSchema.optional(),  
   
-  playerFlipResultPreferences: z.array(z.object({
-    seat: GameTableSeatSchema,
-    preference: FlipACoinPlayerFlipResultPreferenceSchema,
-  })),
-}).describe('Flip A Coin');
+//   playerFlipResultPreferences: z.array(z.object({
+//     seat: GameTableSeatSchema,
+//     preference: FlipACoinPlayerFlipResultPreferenceSchema,
+//   })),
+// }).describe('Flip A Coin');
 
-export type FlipACoinGameState = z.infer<typeof FlipACoinGameStateSchema>;
+// export type FlipACoinGameState = z.infer<typeof FlipACoinGameStateSchema>;
 
 
 const createHostStartsGameAction = (lobbyState: GameLobby): FlipACoinStartGame => {
@@ -180,19 +176,20 @@ const createHostOpensGameOutcome = (_startGameAction: FlipACoinStartGame): FlipA
   const parsed = FlipACoinHostActionOutcomeSchema.parse(outcome);
   
   // Type assertion needed because the schema allows description but the type is StrictEmptyObject
-  return parsed as unknown as FlipACoinHostActionOutcome;
+  return parsed;
 }
 
 const createHostOpensGameState = (startGameAction: FlipACoinStartGame): FlipACoinGameState => {
   // Validate the action against our schema to extract typed information
-  const parsedAction = FlipACoinStartGameSchema.safeParse(startGameAction);
+  // const parsedAction = FlipACoinStartGameSchema.safeParse(startGameAction);
   
-  if (!parsedAction.success) {
-    throw new Error('Invalid start game action');
-  }
+  // if (!parsedAction.success) {
+  //   throw new Error('Invalid start game action');
+  // }
 
   // Extract player seats from the validated start game action
-  const activePlayerSeats = parsedAction.data.activePlayerSeats;
+  // const activePlayerSeats: GameTableSeat[] = parsedAction.data.activePlayerSeats;
+  const activePlayerSeats = startGameAction.activePlayerSeats;
   
   // Initialize preferences only for seats that have players
   const playerFlipResultPreferences = activePlayerSeats.map((seat) => ({
@@ -463,19 +460,6 @@ const summarizePlayerActionOutcome = (_playerActionOutcome: FlipACoinPlayerActio
 const summarizeHostActionOutcome = (_hostActionOutcome: FlipACoinHostActionOutcome): HostActionOutcomeSummary => {
   return 'Flip a coin host action completed' as HostActionOutcomeSummary;
 }
-
-// export const FlipACoinGameProcessor: IBfgGameProcessor = {
-//   createHostStartsGameAction,
-//   createHostOpensGameOutcome,
-//   createHostOpensGameState,
-//   applyPlayerAction,
-//   applyHostAction,
-//   getNextToActPlayers,
-//   getPlayerDetailsLine,
-//   summarizeGameEvent,
-//   summarizePlayerActionOutcome,
-//   summarizeHostActionOutcome,
-// };
 
 
 export const FlipACoinGameProcessor = createBfgGameProcessor({

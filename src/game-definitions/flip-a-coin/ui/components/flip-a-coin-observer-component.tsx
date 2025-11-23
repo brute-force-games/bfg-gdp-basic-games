@@ -1,4 +1,4 @@
-import { FlipACoinGameState, FlipACoinPlayerAction, FlipACoinHostAction } from "../../engine/flip-a-coin-engine";
+import { FlipACoinGameState, FlipACoinPlayerAction, FlipACoinHostAction } from "../../game-types";
 import { FlipACoinRepresentation } from "../flip-a-coin-representation";
 import { ObserverComponentProps } from "@bfg-engine/game-metadata/ui/bfg-game-components";
 import { Box } from "@bfg-engine/ui/bfg-ui";
