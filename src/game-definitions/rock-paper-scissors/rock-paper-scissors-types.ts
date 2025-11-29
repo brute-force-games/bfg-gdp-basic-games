@@ -10,7 +10,6 @@ import {
   BfgGameActionByHostSchema,
   BfgGameActionByPlayerSchema,
   BfgGameEventOutcomeSchema,
-  BfgGameEventSchema,
 } from "@bfg-engine/game-metadata/metadata-types/game-action-types";
 import { BfgGameActionHostOutcomeStrToolbox, BfgGameActionPlayerOutcomeStrToolbox, BfgGameActionWatcherOutcomeStrToolbox } from "../../../../bfg-engine/src/models/types/bfg-branded-string-types";
 
@@ -216,13 +215,13 @@ export const RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema = z.objec
 });
 export type RockPaperScissorsBfgGameSpecificPlayerActionOutcome = z.infer<typeof RockPaperScissorsBfgGameSpecificPlayerActionOutcomeSchema>;
 
-export const RockPaperScissorsGameEventSchema = BfgGameEventSchema.extend({
-  // updatedGameState: RockPaperScissorsHostGameStateSchema,
-  // watcherSummary: BfgGameActionWatcherOutcomeStrToolbox.schema,
-  // playerSeatSummaries: RpsPlayerSeatSummariesSchema,
-  // hostSummary: BfgGameActionHostOutcomeStrToolbox.schema,
-  // nextActions: z.null(),
-}).describe('RockPaperScissorsGameEvent');
+export const RockPaperScissorsGameEventSchema = z.discriminatedUnion('source', [
+  RockPaperScissorsPlayerActionSetHandSchema,
+  RockPaperScissorsPlayerActionConcedeSchema,
+  RockPaperScissorsHostActionStartGameSchema,
+  RockPaperScissorsHostActionCallRoundWinnerSchema,
+  RockPaperScissorsHostActionCallGameWinnerSchema,
+]).describe('RockPaperScissorsGameEvent');
 export type RockPaperScissorsGameEvent = z.infer<typeof RockPaperScissorsGameEventSchema>;
 
 
